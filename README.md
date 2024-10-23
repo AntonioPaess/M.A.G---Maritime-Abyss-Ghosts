@@ -20,8 +20,6 @@ replacing the main.c file to your own.
 
 ## Contributors
 
-https://github.com/AntonioPaess/M.A.G---Maritime-Abyss-Ghosts/graphs/contributors
-
 <div style="display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px;">
     <a href="https://github.com/AntonioPaess">
         <img src="https://avatars.githubusercontent.com/u/123177984?v=4" style="border-radius: 50%; width: 100px; height: 100px;">
