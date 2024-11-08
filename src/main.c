@@ -1,12 +1,15 @@
 #include <stdio.h>
 #include <unistd.h> // Para usleep
-#include <time.h>   // Para medir o tempo
-#include "keyboard.h" // Certifique-se de que keyhit() é não bloqueante
-#include "screen.h"   // Inclui a biblioteca screen
+#include <time.h>
+#include <stdlib.h> // Para malloc, rand, srand
+#include "keyboard.h"
+#include "screen.h"
+#include "listaEncadeada.h"
 
-#define MAP_WIDTH  20
-#define MAP_HEIGHT 10
-#define FRAME_TIME 16667 // Tempo de frame em microsegundos para ~60 FPS
+#define FRAME_TIME 16667 // 100ms
+
+#define MAP_WIDTH (MAXX - MINX + 1)
+#define MAP_HEIGHT (MAXY - MINY + 1)
 
 typedef struct {
     int x;
@@ -16,21 +19,74 @@ typedef struct {
 typedef struct {
     int x;
     int y;
+    int vida;
+    int ativo; // Indica se o inimigo está ativo
+} Inimigo;
+
+typedef struct {
+    int x;
+    int y;
     int ativo;
     char direcao;
     int distancia;
 } Machado;
 
-typedef struct {
-    int x;
-    int y;
-    int vida;
-    int ativo; // Indica se o inimigo está ativo
-} Inimigo;
-
 Objeto obj = {10, 5}; // Posição inicial do jogador
 Inimigo inimigo = {0, 0, 100, 0}; // Inimigo inativo inicialmente
-Machado machado = {0, 0, 0, ' ', 0}; // Inicializa o machado como inativo
+Machado machado = {0, 0, 1, ' ', 0}; // Inicializa o machado como inativo
+
+Node* spawnPositions = NULL;
+
+void initSpawnPositions() {
+    spawnPositions = criarLista();
+    for (int x = MINX; x <= MAXX; x++) {
+        for (int y = MINY; y <= MAXY; y++) {
+            if ((x == obj.x && y == obj.y) || (x == machado.x && y == machado.y)) {
+                continue; // Evita spawnar na posição do jogador ou do machado
+            }
+            int* pos = (int*)malloc(2 * sizeof(int));
+            pos[0] = x;
+            pos[1] = y;
+            inserirFim(&spawnPositions, pos);
+        }
+    }
+}
+
+void freeSpawnPositions() {
+    liberarLista(&spawnPositions);
+}
+
+void getRandomSpawnPosition(int* x, int* y) {
+    int count = 0;
+    Node* temp = spawnPositions;
+    while (temp != NULL) {
+        count++;
+        temp = temp->next;
+    }
+    int randomIndex = rand() % count;
+    temp = spawnPositions;
+    for (int i = 0; i < randomIndex; i++) {
+        temp = temp->next;
+    }
+    int* pos = (int*)temp->data;
+    *x = pos[0];
+    *y = pos[1];
+}
+
+void moverMachado() {
+    if (machado.ativo) {
+        switch (machado.direcao) {
+            case 'w': machado.y--; break;
+            case 's': machado.y++; break;
+            case 'a': machado.x--; break;
+            case 'd': machado.x++; break;
+        }
+        machado.distancia--;
+        if (machado.distancia <= 0 || machado.x < MINX || machado.x > MAXX || machado.y < MINY || machado.y > MAXY) {
+            machado.ativo = 0; // Desativa o machado se ele atingir a distância máxima ou sair do mapa
+        }
+    }
+}
 
 void moverObjeto(Objeto *obj, char direcao) {
     switch (direcao) {
@@ -64,16 +120,6 @@ void moverInimigo(Inimigo *inimigo, Objeto *obj, int frameCount) {
             inimigo->y += 1;
         } else if (inimigo->y > obj->y) {
             inimigo->y -= 1;
-        }
-    }
-}
-
-void moverMachado() {
-    if (machado.ativo) {
-        machado.x += 1; // Move o machado na direção +1 do eixo x
-        machado.distancia -= 1;
-        if (machado.distancia <= 0) {
-            machado.ativo = 0; // Desativa o machado quando a distância é zero
         }
     }
 }
@@ -119,13 +165,16 @@ void atualizarTela(Objeto *obj, Inimigo *inimigo, Machado *machado, int tempoRes
     fflush(stdout); // Atualiza a tela
 }
 
-void iniciarMovimentoMachado() {
-    machado.ativo = 5;
-    machado.direcao = 'm';
-    machado.distancia = MAP_WIDTH - machado.x; // Distância máxima do machado
+void iniciarMovimentoMachado(char direcao) {
+    machado.ativo = 1;
+    machado.direcao = direcao;
+    machado.distancia = 5; // Define a distância máxima que o machado pode percorrer
 }
 
 int main() {
+    srand(time(NULL)); // Inicializa o gerador de números aleatórios
+    initSpawnPositions(); // Inicializa as posições de spawn
+
     char input;
     int frameCount = 0;
     time_t tempoInicial = time(NULL);
@@ -148,9 +197,9 @@ int main() {
             }
             if (input == 'm') {
                 if (!machado.ativo) {
-                    machado.x = obj.x + 1; // Machado começa na posição +1 do eixo x
+                    machado.x = obj.x;
                     machado.y = obj.y;
-                    iniciarMovimentoMachado();
+                    iniciarMovimentoMachado(input); // Define a direção do machado
                 }
             } else {
                 moverObjeto(&obj, input);
@@ -168,6 +217,7 @@ int main() {
         // Controla o aparecimento do inimigo após 5 segundos
         if (tempoDecorrido >= 5) {
             if (!inimigo.ativo) {
+                getRandomSpawnPosition(&inimigo.x, &inimigo.y); // Define posição aleatória para o inimigo
                 inimigo.ativo = 1; // Ativa o inimigo
             }
             // Move o inimigo a cada 5 frames para diminuir a velocidade
@@ -177,26 +227,26 @@ int main() {
             if (atacar(&inimigo, &machado)) {
                 // Inimigo foi morto
             }
-
             // Verifica colisão entre o inimigo e o jogador
             if (inimigo.ativo && inimigo.x == obj.x && inimigo.y == obj.y) {
                 screenClear();
                 printf("Game Over! Você foi pego pelo inimigo.\n");
                 printf("Pressione enter para sair.\n");
                 keyboardDestroy(); // Restaura o terminal
-                getchar(); // Aguarda o jogador pressionar uma tecla
-                break; // Sai do loop principal
+                screenDestroy();   // Restaura a tela
+                freeSpawnPositions(); // Libera a lista de posições de spawn
+                return 0;
             }
         }
 
         // Atualiza a tela
         atualizarTela(&obj, &inimigo, &machado, tempoRestante);
-
         // Controla a taxa de quadros
         usleep(FRAME_TIME); // Pausa para manter a taxa de quadros
     }
 
     keyboardDestroy(); // Destrói o teclado
     screenDestroy();   // Destrói a tela
+    freeSpawnPositions(); // Libera a lista de posições de spawn
     return 0;
 }
