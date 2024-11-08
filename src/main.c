@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <unistd.h> // Para usleep
-#include "keyboard.h" // Inclui a biblioteca keyboard
+#include <time.h>   // Para medir o tempo
+#include "keyboard.h" // Certifique-se de que keyhit() é não bloqueante
 #include "screen.h"   // Inclui a biblioteca screen
-#include "timer.h"    // Inclui a biblioteca timer
 
 #define MAP_WIDTH  20
 #define MAP_HEIGHT 10
-#define FRAME_TIME 16000 // Tempo de frame em microsegundos para ~60 FPS
+#define FRAME_TIME 16667 // Tempo de frame em microsegundos para ~60 FPS
 
 typedef struct {
     int x;
@@ -25,10 +25,11 @@ typedef struct {
     int x;
     int y;
     int vida;
+    int ativo; // Indica se o inimigo está ativo
 } Inimigo;
 
-Objeto obj = {SCRSTARTX, SCRSTARTY};
-Inimigo inimigo = {SCRENDX, SCRENDY, 100}; // Inicializa o inimigo com 100 de vida
+Objeto obj = {10, 5}; // Posição inicial do jogador
+Inimigo inimigo = {0, 0, 100, 0}; // Inimigo inativo inicialmente
 Machado machado = {0, 0, 0, ' ', 0}; // Inicializa o machado como inativo
 
 void moverObjeto(Objeto *obj, char direcao) {
@@ -48,17 +49,22 @@ void moverObjeto(Objeto *obj, char direcao) {
     }
 }
 
-void moverInimigo(Inimigo *inimigo, Objeto *obj) {
-    if (inimigo->x < obj->x) {
-        inimigo->x += 1;
-    } else if (inimigo->x > obj->x) {
-        inimigo->x -= 1;
-    }
-
-    if (inimigo->y < obj->y) {
-        inimigo->y += 1;
-    } else if (inimigo->y > obj->y) {
-        inimigo->y -= 1;
+void moverInimigo(Inimigo *inimigo, Objeto *obj, int frameCount) {
+    // Alterna o eixo de movimento a cada frame
+    if (frameCount % 2 == 0) {
+        // Move no eixo X
+        if (inimigo->x < obj->x) {
+            inimigo->x += 1;
+        } else if (inimigo->x > obj->x) {
+            inimigo->x -= 1;
+        }
+    } else {
+        // Move no eixo Y
+        if (inimigo->y < obj->y) {
+            inimigo->y += 1;
+        } else if (inimigo->y > obj->y) {
+            inimigo->y -= 1;
+        }
     }
 }
 
@@ -68,54 +74,73 @@ void moverMachado() {
         machado.distancia -= 1;
         if (machado.distancia <= 0) {
             machado.ativo = 0; // Desativa o machado quando a distância é zero
-            timerDestroy(); // Para o temporizador
         }
     }
 }
 
 int atacar(Inimigo *inimigo, Machado *machado) {
     // Verifica se o machado atingiu o inimigo
-    if (machado->ativo && machado->x == inimigo->x && machado->y == inimigo->y) {
+    if (machado->ativo && inimigo->ativo && machado->x == inimigo->x && machado->y == inimigo->y) {
         machado->ativo = 0; // Desativa o machado
         inimigo->vida -= 100; // Machado causa 100 de dano
         if (inimigo->vida <= 0) {
-            return 1; // Inimigo morto
+            inimigo->ativo = 0; // Inimigo morto
+            return 1;
         }
     }
     return 0; // Inimigo não morto
 }
 
-void atualizarTela(Objeto *obj, Inimigo *inimigo, Machado *machado) {
+void atualizarTela(Objeto *obj, Inimigo *inimigo, Machado *machado, int tempoRestante) {
     screenClear(); // Limpa a tela
-    screenGotoxy(obj->x, obj->y); // Move o cursor para a nova posição do objeto
-    printf("O"); // Desenha o objeto na nova posição
-    if (inimigo->vida > 0) {
-        screenGotoxy(inimigo->x, inimigo->y); // Move o cursor para a nova posição do inimigo
-        printf("X"); // Desenha o inimigo na nova posição
+
+    // Desenha o jogador
+    screenGotoxy(obj->x, obj->y);
+    printf("O");
+
+    // Desenha o inimigo se ele estiver ativo
+    if (inimigo->ativo && inimigo->vida > 0) {
+        screenGotoxy(inimigo->x, inimigo->y);
+        printf("X");
     }
+
+    // Desenha o machado se estiver ativo
     if (machado->ativo) {
-        screenGotoxy(machado->x, machado->y); // Move o cursor para a nova posição do machado
-        printf("M"); // Desenha o machado na nova posição
+        screenGotoxy(machado->x, machado->y);
+        printf("M");
     }
+
+    // Exibe aviso antes do inimigo aparecer
+    if (!inimigo->ativo && tempoRestante > 0) {
+        screenGotoxy(1, MAP_HEIGHT + 2);
+        printf("O inimigo aparecerá em %d segundos!", tempoRestante);
+    }
+
     fflush(stdout); // Atualiza a tela
 }
 
 void iniciarMovimentoMachado() {
-    machado.ativo = 1;
+    machado.ativo = 5;
     machado.direcao = 'm';
     machado.distancia = MAP_WIDTH - machado.x; // Distância máxima do machado
-    timerInit(500); // Inicia o temporizador para mover o machado por 0.5 segundos
 }
 
 int main() {
     char input;
-
+    int frameCount = 0;
+    time_t tempoInicial = time(NULL);
     keyboardInit(); // Inicializa o teclado
     screenInit(1);   // Inicializa a tela
-
-    printf("Use WASD para mover o objeto. Use Q, E, Z, C para mover na diagonal. Pressione 'q' para sair. Pressione 'M' para lançar o machado.\n");
+    printf("Use WASD para mover o objeto. Pressione 'q' para sair. Pressione 'm' para lançar o machado.\n");
 
     while (1) {
+        // Calcula o tempo decorrido
+        time_t tempoAtual = time(NULL);
+        int tempoDecorrido = (int)difftime(tempoAtual, tempoInicial);
+        int tempoRestante = 5 - tempoDecorrido;
+        if (tempoRestante < 0) tempoRestante = 0;
+
+        // Verifica entrada do usuário sem bloquear
         if (keyhit()) {
             input = getchar();
             if (input == 'q') {
@@ -132,24 +157,46 @@ int main() {
             }
         }
 
-        if (machado.ativo && timerTimeOver()) {
+        // Atualiza lógica do jogo
+        if (machado.ativo) {
             moverMachado();
-            timerUpdateTimer(500); // Reinicia o temporizador para continuar movendo o machado
         }
 
-        if (inimigo.vida > 0) {
-            moverInimigo(&inimigo, &obj);
+        // Incrementa o contador de frames
+        frameCount++;
+
+        // Controla o aparecimento do inimigo após 5 segundos
+        if (tempoDecorrido >= 5) {
+            if (!inimigo.ativo) {
+                inimigo.ativo = 1; // Ativa o inimigo
+            }
+            // Move o inimigo a cada 5 frames para diminuir a velocidade
+            if (inimigo.ativo && inimigo.vida > 0 && frameCount % 5 == 0) {
+                moverInimigo(&inimigo, &obj, frameCount);
+            }
+            if (atacar(&inimigo, &machado)) {
+                // Inimigo foi morto
+            }
+
+            // Verifica colisão entre o inimigo e o jogador
+            if (inimigo.ativo && inimigo.x == obj.x && inimigo.y == obj.y) {
+                screenClear();
+                printf("Game Over! Você foi pego pelo inimigo.\n");
+                printf("Pressione enter para sair.\n");
+                keyboardDestroy(); // Restaura o terminal
+                getchar(); // Aguarda o jogador pressionar uma tecla
+                break; // Sai do loop principal
+            }
         }
-        if (atacar(&inimigo, &machado)) {
-            inimigo.vida = 0; // Inimigo foi morto
-        }
-        atualizarTela(&obj, &inimigo, &machado);
+
+        // Atualiza a tela
+        atualizarTela(&obj, &inimigo, &machado, tempoRestante);
+
+        // Controla a taxa de quadros
         usleep(FRAME_TIME); // Pausa para manter a taxa de quadros
     }
 
     keyboardDestroy(); // Destrói o teclado
     screenDestroy();   // Destrói a tela
-    timerDestroy();    // Destroi o temporizador
-
     return 0;
 }

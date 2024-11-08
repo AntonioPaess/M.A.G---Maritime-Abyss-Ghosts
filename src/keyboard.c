@@ -7,6 +7,8 @@
 
 #include <termios.h>
 #include <unistd.h>
+#include <stdio.h>
+#include <fcntl.h>
 
 #include "keyboard.h"
 
@@ -31,25 +33,28 @@ void keyboardDestroy()
     tcsetattr(0, TCSANOW, &initialSettings);
 }
 
-int keyhit()
-{
-    unsigned char ch;
-    int nread;
+int keyhit() {
+    struct termios oldt, newt;
+    int ch;
+    int oldf;
 
-    if (peekCharacter != -1) return 1;
-    
-    newSettings.c_cc[VMIN]=0;
-    tcsetattr(0, TCSANOW, &newSettings);
-    nread = read(0,&ch,1);
-    newSettings.c_cc[VMIN]=1;
-    tcsetattr(0, TCSANOW, &newSettings);
-    
-    if(nread == 1) 
-    {
-        peekCharacter = ch;
+    tcgetattr(STDIN_FILENO, &oldt);
+    newt = oldt;
+    newt.c_lflag &= ~(ICANON | ECHO); // Desabilita entrada canonica e eco
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+    oldf = fcntl(STDIN_FILENO, F_GETFL, 0); // Salva flags antigas
+    fcntl(STDIN_FILENO, F_SETFL, oldf | O_NONBLOCK); // Modo não bloqueante
+
+    ch = getchar();
+
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt); // Restaura terminal
+    fcntl(STDIN_FILENO, F_SETFL, oldf); // Restaura flags
+
+    if (ch != EOF) {
+        ungetc(ch, stdin); // Devolve caractere
         return 1;
     }
-    
+
     return 0;
 }
 
