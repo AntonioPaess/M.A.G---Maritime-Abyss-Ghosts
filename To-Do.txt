@@ -1,0 +1,19 @@
+Jogo PIF:
+-Melhorar visual
+
+-Pagina inicial - Adicionar uma tela de inicio ao jogo com o botão de inicio e de Hall da fama (onde fica os recordes)
+
+-Hall da fama - Criar uma tela com a pontuação recorde dos jogadores listadas em ordem, essas informações são salvas no arquivo score.txt 
+
+-Aumentar mapa - Aumentar o mapa jogável dando mais espaço para o jogador se locomover
+
+
+FEITOS:
+
+-Limitar numero de inimigos - O numero máximo de inimigos spawnados é de 16
+
+-Mudar Lógica do machado p/ setas
+
+-Colocar corações de vida - O jogador tem 3 corações na tela e ele perde sempre que toma um hit do inimigo
+
+
