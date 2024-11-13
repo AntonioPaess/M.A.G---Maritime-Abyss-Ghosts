@@ -23,6 +23,7 @@
 
 // Sistema de pontuação
 int pontuacao = 0;
+int y = 1;
 
 typedef struct {
     int x;
@@ -169,21 +170,21 @@ void atualizarTela(Objeto *obj, Machado *machado, double tempoDecorrido) {
     screenClear(); // Limpa a tela
     // Desenha o jogador
     screenGotoxy(obj->x, obj->y);
-    printf("O");
+    printf("🐟");
     // Desenha os inimigos
     Node* temp = inimigos;
     while (temp != NULL) {
         Inimigo* inimigo = (Inimigo*)temp->data;
         if (inimigo->ativo && inimigo->vida > 0) {
             screenGotoxy(inimigo->x, inimigo->y);
-            printf("X");
+            printf("🦈");
         }
         temp = temp->next;
     }
     // Desenha o machado se estiver ativo
     if (machado->ativo) {
         screenGotoxy(machado->x, machado->y);
-        printf("M");
+        printf("💦");
     }
     // Exibe a pontuação
     screenGotoxy(1, MAXY - 2);
@@ -389,8 +390,26 @@ void mostrarHallDaFama() {
 
 void mostrarTelaInicial() {
     screenClear();
-    screenGotoxy(1, 1);
-    printf("Bem-vindo ao Jogo!\n");
+    screenGotoxy(1,1);
+    // Ler e exibir o conteúdo de "Menu.txt"
+    char diretorio[PATH_MAX];
+    obterDiretorioExecutavel(diretorio, sizeof(diretorio));
+    char caminhoMenu[PATH_MAX];
+    snprintf(caminhoMenu, sizeof(caminhoMenu), "%s/assets/Menu.txt", diretorio);
+    FILE* arquivo = fopen(caminhoMenu, "r");
+    if (arquivo != NULL) {
+        char linha[256];
+        while (fgets(linha, sizeof(linha), arquivo)) {
+            screenGotoxy(1, y++);
+            printf("%s", linha);
+        }
+        fclose(arquivo);
+    } else {
+        printf("Não foi possível carregar o menu.\n");
+    }
+    // Exibir as opções abaixo da arte
+    // ...código existente...
+    screenGotoxy(1, y + 1);
     printf("1. Iniciar Jogo\n");
     printf("2. Hall da Fama\n");
     printf("Selecione uma opção: ");
@@ -437,6 +456,9 @@ int main() {
             while ((getchar()) != '\n'); // Limpa o buffer de entrada
         }
     }
+
+    // Declaração da variável temp antes do loop principal
+    Node* temp;
 
 while (1) {
     // Verifica entrada do usuário sem bloquear
@@ -504,7 +526,7 @@ while (1) {
 
     // Move os inimigos apenas se não estiverem congelados
     if (!inimigosCongelados && frameCount % 10 == 0) {
-        Node* temp = inimigos;
+        temp = inimigos;
         while (temp != NULL) {
             Inimigo* inimigo = (Inimigo*)temp->data;
             if (inimigo->ativo && inimigo->vida > 0) {
@@ -515,7 +537,7 @@ while (1) {
     }
 
     // Verifica colisão entre os inimigos e o jogador
-    Node* temp = inimigos;
+    temp = inimigos;
     while (temp != NULL) {
         Inimigo* inimigo = (Inimigo*)temp->data;
         if (inimigo->ativo && inimigo->x == obj.x && inimigo->y == obj.y) {
