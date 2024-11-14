@@ -50,8 +50,8 @@
 
 #define MINX           1      // min screen horizontal pos
 #define MINY           1      // min screen vertical pos
-#define MAXX           160     // max screen horizontal pos
-#define MAXY           48    // max screen vertical pos
+#define MAXX           248    // max screen horizontal pos
+#define MAXY           48   // max screen vertical pos
 
 /**
  * Screen Colors type
