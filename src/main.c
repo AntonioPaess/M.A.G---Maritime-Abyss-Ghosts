@@ -23,15 +23,20 @@
 #define TEMPO_8_INIMIGOS 16.5
 #define TEMPO_16_INIMIGOS 22.0
 
+#define DANO_POR_VIDA 10 // Dano necessário para perder uma vida
+
 // Sistema de pontuação
 int pontuacao = 0;
+int gameOver = 0;
 int y = 1;
+double tempoDecorrido = 0.0; // Tornar global para acesso em outras funções
 
 typedef struct
 {
     int x;
     int y;
-    int vidas; // Número de vidas do jogador
+    int vidas; // Número máximo de vidas
+    int dano;  // Dano acumulado
 } Objeto;
 
 typedef struct
@@ -39,7 +44,7 @@ typedef struct
     int x;
     int y;
     int vida;
-    int ativo; // Indica se o inimigo está ativo
+    int ativo;         // Indica se o inimigo está ativo
     const char *forma; // Forma do inimigo
 } Inimigo;
 
@@ -53,9 +58,9 @@ typedef struct
     int moveCounter; // Contador para controlar a frequência de movimento
 } Machado;
 
-Objeto obj = {MAP_WIDTH / 2, MAP_HEIGHT / 2, 18};                // Posição inicial do jogador com 3 vidas
-Machado machado = {0, 0, 0, ' ', 0, 0}; // Inicializa o machado como inativo
-Node *inimigos = NULL;                  // Lista de inimigos
+Objeto obj = {MAP_WIDTH / 2, MAP_HEIGHT / 2, 300, 0}; // Posição inicial do jogador com 3 vidas e dano zero
+Machado machado = {0, 0, 0, ' ', 0, 0};               // Inicializa o machado como inativo
+Node *inimigos = NULL;                                // Lista de inimigos
 Node *spawnPositions = NULL;
 char lastDir = 'd';   // Direção padrão inicial (direita)
 char nomeJogador[50]; // Armazena o nome do jogador
@@ -212,13 +217,15 @@ void atualizarTela(Objeto *obj, Machado *machado, double tempoDecorrido)
     screenClear(); // Limpa a tela
 
     // Desenha o contorno do mapa
-    for (int x = 0; x <= MAP_WIDTH + 1; x++) {
+    for (int x = 0; x <= MAP_WIDTH + 1; x++)
+    {
         screenGotoxy(x, 0);
         printf("═");
         screenGotoxy(x, MAP_HEIGHT + 1);
         printf("═");
     }
-    for (int y = 0; y <= MAP_HEIGHT + 1; y++) {
+    for (int y = 0; y <= MAP_HEIGHT + 1; y++)
+    {
         screenGotoxy(0, y);
         printf("║");
         screenGotoxy(MAP_WIDTH + 1, y);
@@ -257,46 +264,31 @@ void atualizarTela(Objeto *obj, Machado *machado, double tempoDecorrido)
         printf("💦");
     }
 
-    // Desenha a caixa de informações abaixo do mapa
-    int infoBoxY = MAP_HEIGHT + 3;
-    for (int x = 0; x <= MAP_WIDTH + 1; x++) {
-        screenGotoxy(x, infoBoxY);
-        printf("═");
-        screenGotoxy(x, infoBoxY + 4);
-        printf("═");
-    }
-    for (int y = infoBoxY; y <= infoBoxY + 4; y++) {
-        screenGotoxy(0, y);
-        printf("║");
-        screenGotoxy(MAP_WIDTH + 1, y);
-        printf("║");
-    }
-    screenGotoxy(0, infoBoxY);
-    printf("╔");
-    screenGotoxy(MAP_WIDTH + 1, infoBoxY);
-    printf("╗");
-    screenGotoxy(0, infoBoxY + 4);
-    printf("╚");
-    screenGotoxy(MAP_WIDTH + 1, infoBoxY + 4);
-    printf("╝");
-
-    // Exibe a pontuação
-    screenGotoxy(2, infoBoxY + 1);
+    // Exibe a pontuação no canto superior esquerdo
+    screenGotoxy(2, 1);
     printf("Pontuação: %d", pontuacao);
 
-    // Exibe o cronômetro
-    screenGotoxy(2, infoBoxY + 2);
-    printf("Tempo: %.1f segundos", tempoDecorrido);
+    // Exibe o cronômetro no canto superior direito
+    screenGotoxy(MAP_WIDTH - 20, 1);
+    printf("Tempo: %.1fs", tempoDecorrido);
 
-    // Exibe a barra de vidas
-    screenGotoxy(2, infoBoxY + 3);
+    // Exibe a barra de vidas no canto inferior esquerdo
+    screenGotoxy(2, MAP_HEIGHT + 2);
     printf("Vidas: ");
-    int barraVidas = obj->vidas * 2; // Cada vida representa 2 blocos na barra
-    for (int i = 0; i < 6; i++) {
-        if (i < barraVidas) {
-            printf("█");
-        } else {
-            printf(" ");
+
+    int maxVidas = obj->vidas; // Número máximo de vidas
+    int vidasPerdidas = obj->dano / DANO_POR_VIDA;
+    int vidasAtuais = maxVidas - vidasPerdidas;
+
+    for (int i = 0; i < maxVidas; i++)
+    {
+        if (i < vidasAtuais)
+        {
+            printf("❤️ ");
+        }
+        else
+        {
+            printf("   "); // Espaço reservado para alinhamento
         }
     }
 
@@ -346,6 +338,7 @@ Inimigo *criarInimigo()
 
     return novoInimigo;
 }
+
 int contarInimigosAtivos(Node *lista)
 {
     int count = 0;
@@ -412,7 +405,7 @@ void duplicarInimigos(double tempoAtual)
     if (numInimigosAtivos < numInimigosDesejados)
     {
         int inimigosParaAdicionar = numInimigosDesejados - numInimigosAtivos;
-        printf("Adicionando inimigos! De %d para %d\n", numInimigosAtivos, numInimigosDesejados);
+        // printf("Adicionando inimigos! De %d para %d\n", numInimigosAtivos, numInimigosDesejados);
 
         for (int i = 0; i < inimigosParaAdicionar; i++)
         {
@@ -438,9 +431,9 @@ void moverMachadoEAtacar()
                 inimigo->vida -= 100; // Machado causa 100 de dano
                 if (inimigo->vida <= 0)
                 {
-                    inimigo->ativo = 0;                                            // Inimigo morto
-                    pontuacao += 100;                                              // Incrementa a pontuação em 100
-                    printf("Inimigo derrotado! Pontuação atual: %d\n", pontuacao); // Debug
+                    inimigo->ativo = 0; // Inimigo morto
+                    pontuacao += 100;   // Incrementa a pontuação em 100
+                                        // printf("Inimigo derrotado! Pontuação atual: %d\n", pontuacao); // Debug
                 }
             }
             temp = temp->next;
@@ -462,12 +455,12 @@ void liberarInimigos(Node **lista)
 
 void salvarPontuacao(char *nome, double tempo, int pontuacao)
 {
-    printf("Tentando salvar a pontuação...\n"); // Debug
+    // printf("Tentando salvar a pontuação...\n"); // Debug
 
     // Obter o diretório do executável
     char diretorio[PATH_MAX];
     obterDiretorioExecutavel(diretorio, sizeof(diretorio));
-    printf("Diretório do executável: %s\n", diretorio); // Debug
+    // printf("Diretório do executável: %s\n", diretorio); // Debug
 
     // Construir o caminho completo para scores.txt
     char caminhoScores[PATH_MAX];
@@ -480,7 +473,7 @@ void salvarPontuacao(char *nome, double tempo, int pontuacao)
         // Salva em formato CSV: nome,tempo,pontuacao
         fprintf(arquivo, "%s,%.1f,%d\n", nome, tempo, pontuacao);
         fclose(arquivo);
-        printf("Pontuação salva com sucesso em %s.\n", caminhoScores); // Debug
+        // printf("Pontuação salva com sucesso em %s.\n", caminhoScores); // Debug
     }
     else
     {
@@ -551,15 +544,36 @@ void mostrarHallDaFama()
     getchar();
 }
 
-void reiniciarJogo() {
-    obj.x = MAP_WIDTH/2;
-    obj.y = MAP_HEIGHT/2;
+void reiniciarJogo()
+{
+    // Reseta a posição do jogador
+    obj.x = MAP_WIDTH / 2;
+    obj.y = MAP_HEIGHT / 2;
+
+    // Reseta status do jogador
     obj.vidas = 3;
+    obj.dano = 0;
+
+    // Reseta pontuação e tempo
     pontuacao = 0;
+    tempoDecorrido = 0.0;
+
+    // Limpa lista de inimigos
     liberarInimigos(&inimigos);
     inimigos = NULL;
+
+    // Reseta o machado
     machado.ativo = 0;
+    machado.x = 0;
+    machado.y = 0;
+    machado.distancia = 0;
+    machado.moveCounter = 0;
+
+    // Reinicializa posições de spawn
+    freeSpawnPositions();
+    initSpawnPositions();
 }
+
 void mostrarTelaGameOver(double tempoDecorrido, int pontuacao)
 {
     screenClear();
@@ -697,12 +711,9 @@ void mostrarTelaGameOver(double tempoDecorrido, int pontuacao)
         }
     }
 
-    
-
     const char *opcoes[] = {
         "1. Salvar e voltar ao menu",
-        "2. Sair"
-    };
+        "2. Sair"};
     int numOpcoes = sizeof(opcoes) / sizeof(opcoes[0]);
     int opcaoSelecionada = 0;
 
@@ -725,12 +736,12 @@ void mostrarTelaGameOver(double tempoDecorrido, int pontuacao)
             getchar(); // Ignora o '['
             switch (getchar())
             {
-                case 'A':
-                    opcaoSelecionada = (opcaoSelecionada - 1 + numOpcoes) % numOpcoes;
-                    break;
-                case 'B':
-                    opcaoSelecionada = (opcaoSelecionada + 1) % numOpcoes;
-                    break;
+            case 'A':
+                opcaoSelecionada = (opcaoSelecionada - 1 + numOpcoes) % numOpcoes;
+                break;
+            case 'B':
+                opcaoSelecionada = (opcaoSelecionada + 1) % numOpcoes;
+                break;
             }
         }
         else if (ch == '\n')
@@ -741,24 +752,26 @@ void mostrarTelaGameOver(double tempoDecorrido, int pontuacao)
 
     switch (opcaoSelecionada)
     {
-        case 0:
-            salvarPontuacao(nomeJogador, tempoDecorrido, pontuacao);
-            reiniciarJogo();
-            break;
-        case 1:
-            liberarInimigos(&inimigos);
-            keyboardDestroy();
-            screenDestroy();
-            freeSpawnPositions();
-            exit(0);
-            break;
-        default:
-            printf("\nOpção inválida. Tente novamente.\n");
-            while (getchar() != '\n'); // Limpa o buffer de entrada
-            break;
+    case 0: // Salvar e voltar ao menu
+        salvarPontuacao(nomeJogador, tempoDecorrido, pontuacao);
+        reiniciarJogo();
+        gameOver = 1; // Usa a flag existente para sair do loop do jogo
+        break;
+    case 1:
+        liberarInimigos(&inimigos);
+        keyboardDestroy();
+        screenDestroy();
+        freeSpawnPositions();
+        exit(0);
+        break;
+    default:
+        printf("\nOpção inválida. Tente novamente.\n");
+        while (getchar() != '\n')
+            ; // Limpa o buffer de entrada
+        break;
     }
+    gameOver = 1; // Adiciona esta linha para garantir que o jogo seja reiniciado
 }
-
 
 int mostrarTelaInicial()
 {
@@ -825,8 +838,7 @@ int mostrarTelaInicial()
     const char *opcoes[] = {
         "1. Iniciar Jogo",
         "2. Hall da Fama",
-        "3. Sair"
-    };
+        "3. Sair"};
     int numOpcoes = sizeof(opcoes) / sizeof(opcoes[0]);
     int opcaoSelecionada = 0;
 
@@ -849,12 +861,12 @@ int mostrarTelaInicial()
             getchar(); // Skip the [
             switch (getchar())
             {
-                case 'A':
-                    opcaoSelecionada = (opcaoSelecionada - 1 + numOpcoes) % numOpcoes;
-                    break;
-                case 'B':
-                    opcaoSelecionada = (opcaoSelecionada + 1) % numOpcoes;
-                    break;
+            case 'A':
+                opcaoSelecionada = (opcaoSelecionada - 1 + numOpcoes) % numOpcoes;
+                break;
+            case 'B':
+                opcaoSelecionada = (opcaoSelecionada + 1) % numOpcoes;
+                break;
             }
         }
         else if (ch == '\n')
@@ -866,190 +878,234 @@ int mostrarTelaInicial()
     return opcaoSelecionada;
 }
 
-int main() {
+void aplicarDano(Objeto *obj, int danoRecebido)
+{
+    obj->dano += danoRecebido;
+
+    int vidasPerdidas = obj->dano / DANO_POR_VIDA;
+    int vidasRestantes = obj->vidas - vidasPerdidas;
+
+    if (vidasRestantes <= 0)
+    {
+        // O jogador perdeu todas as vidas
+        gameOver = 1; // Sinaliza que o jogo acabou
+    }
+}
+
+int main()
+{
     screenClear();
     srand(time(NULL));
     initSpawnPositions();
     keyboardInit();
     screenInit(0);
 
-    while (1) {
+    while (1)
+    {
         int opcao = mostrarTelaInicial();
 
-        switch (opcao) {
-            case 0:
-                // Iniciar Jogo
-                screenClear();
-                // Solicita o nome do jogador após escolher iniciar o jogo
-                struct winsize w;
-                ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-                int terminalWidth = w.ws_col;
-                int terminalHeight = w.ws_row;
+        switch (opcao)
+        {
+        case 0: // Iniciar Jogo
+            screenClear();
 
-                const char *titulo = "Digite seu nome:";
-                const char *instrucao = "Use WASD para mover o objeto. Pressione as setas para lançar o machado.";
+            // Configuração inicial do terminal
+            struct winsize w;
+            ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+            int terminalWidth = w.ws_col;
+            int terminalHeight = w.ws_row;
 
-                screenGotoxy((terminalWidth - strlen(instrucao)) / 2, terminalHeight / 2 - 2);
-                printf("\033[96m%s\033[0m", instrucao);
+            const char *titulo = "Digite seu nome:";
+            const char *instrucao = "Use WASD para mover o objeto. Pressione as setas para lançar o machado.";
 
-                screenGotoxy((terminalWidth - strlen(titulo)) / 2, terminalHeight / 2);
-                printf("\033[94m%s\033[0m", titulo);
+            screenGotoxy((terminalWidth - strlen(instrucao)) / 2, terminalHeight / 2 - 2);
+            printf("\033[96m%s\033[0m", instrucao);
+            screenGotoxy((terminalWidth - strlen(titulo)) / 2, terminalHeight / 2);
+            printf("\033[94m%s\033[0m", titulo);
+            screenGotoxy((terminalWidth - 20) / 2, terminalHeight / 2 + 2);
+            printf("\033[92m> \033[0m");
 
-                screenGotoxy((terminalWidth - 20) / 2, terminalHeight / 2 + 2);
-                printf("\033[92m> \033[0m");
-
-                // Captura o nome do jogador e exibe em tempo real
-                int index = 0;
-                char ch;
-                while ((ch = getchar()) != '\n' && index < sizeof(nomeJogador) - 1) {
-                    if (ch == 127 || ch == '\b') { // Verifica se a tecla pressionada é backspace
-                        if (index > 0) {
-                            index--;
-                            nomeJogador[index] = '\0';
-                        }
-                    } else {
-                        nomeJogador[index++] = ch;
-                        nomeJogador[index] = '\0'; // Adiciona o terminador nulo
+            // Captura do nome
+            int index = 0;
+            char ch;
+            while ((ch = getchar()) != '\n' && index < sizeof(nomeJogador) - 1)
+            {
+                if (ch == 127 || ch == '\b')
+                {
+                    if (index > 0)
+                    {
+                        index--;
+                        nomeJogador[index] = '\0';
                     }
-                    screenGotoxy((terminalWidth - 20) / 2 + 2, terminalHeight / 2 + 2);
-                    printf("\033[92m%-20s\033[0m", nomeJogador); // Exibe o nome com padding para apagar caracteres
-                    fflush(stdout); // Atualiza a tela
                 }
-                nomeJogador[index] = '\0'; // Garante que a string está terminada em null
+                else
+                {
+                    nomeJogador[index++] = ch;
+                    nomeJogador[index] = '\0';
+                }
+                screenGotoxy((terminalWidth - 20) / 2 + 2, terminalHeight / 2 + 2);
+                printf("\033[92m%-20s\033[0m", nomeJogador);
+                fflush(stdout);
+            }
+            nomeJogador[index] = '\0';
 
-                // Inicialização das variáveis do jogo
-                char input;
-                int frameCount = 0;
-                double tempoDecorrido = 2.0;
-                double nextEnemyIncreaseTime = 5.5;
-                int gameOver = 0;
-                int inimigosCongelados = 0;
-                double tempoCongelamentoInicio = 0.0;
+            // Inicialização das variáveis do jogo
+            reiniciarJogo();
+            char input;
+            int frameCount = 0;
+            tempoDecorrido = 0.0;
+            double nextEnemyIncreaseTime = 5.5;
+            int gameOver = 0;
+            int inimigosCongelados = 0;
+            double tempoCongelamentoInicio = 0.0;
 
-                // Inicializa o primeiro inimigo
-                Inimigo *inimigoInicial = criarInimigo();
-                adicionarInimigo(&inimigos, inimigoInicial);
+            // Inicializa o primeiro inimigo
+            Inimigo *inimigoInicial = criarInimigo();
+            adicionarInimigo(&inimigos, inimigoInicial);
 
-                
-                // Loop principal do jogo
-                Node *temp;
-                while (1) {
-                    if (keyhit()) {
+            // Loop principal do jogo
+            Node *temp;
+            while (1)
+            {
+                if (keyhit())
+                {
+                    input = getchar();
+                    if (input == 'q')
+                    {
+                        salvarPontuacao(nomeJogador, tempoDecorrido, pontuacao);
+                        break;
+                    }
+
+                    if (input == '\033')
+                    {
+                        getchar();
                         input = getchar();
-                        if (input == 'q') {
-                            salvarPontuacao(nomeJogador, tempoDecorrido, pontuacao);
+                        switch (input)
+                        {
+                        case 'A':
+                            if (!machado.ativo)
+                            {
+                                lastDir = 'w';
+                                iniciarMovimentoMachado();
+                            }
+                            break;
+                        case 'B':
+                            if (!machado.ativo)
+                            {
+                                lastDir = 's';
+                                iniciarMovimentoMachado();
+                            }
+                            break;
+                        case 'C':
+                            if (!machado.ativo)
+                            {
+                                lastDir = 'd';
+                                iniciarMovimentoMachado();
+                            }
+                            break;
+                        case 'D':
+                            if (!machado.ativo)
+                            {
+                                lastDir = 'a';
+                                iniciarMovimentoMachado();
+                            }
                             break;
                         }
-
-                        if (input == '\033') { // Teclas especiais (setas)
-                            getchar();
-                            input = getchar();
-                            switch (input) {
-                                case 'A':
-                                    if (!machado.ativo) {
-                                        lastDir = 'w';
-                                        iniciarMovimentoMachado();
-                                    }
-                                    break;
-                                case 'B':
-                                    if (!machado.ativo) {
-                                        lastDir = 's';
-                                        iniciarMovimentoMachado();
-                                    }
-                                    break;
-                                case 'C':
-                                    if (!machado.ativo) {
-                                        lastDir = 'd';
-                                        iniciarMovimentoMachado();
-                                    }
-                                    break;
-                                case 'D':
-                                    if (!machado.ativo) {
-                                        lastDir = 'a';
-                                        iniciarMovimentoMachado();
-                                    }
-                                    break;
-                            }
-                        } else {
-                            moverObjeto(&obj, input);
-                        }
                     }
-
-                    // Lógica do jogo
-                    moverMachadoEAtacar();
-                    frameCount++;
-                    tempoDecorrido += FRAME_TIME / 1000000.0;
-
-                    if (tempoDecorrido >= nextEnemyIncreaseTime) {
-                        nextEnemyIncreaseTime += 5.5;
-                        duplicarInimigos(tempoDecorrido);
+                    else
+                    {
+                        moverObjeto(&obj, input);
                     }
+                }
 
-                    // Lógica de congelamento
-                    if (inimigosCongelados && (tempoDecorrido - tempoCongelamentoInicio) >= 2.0) {
-                        inimigosCongelados = 0;
-                    }
+                // Lógica do jogo
+                moverMachadoEAtacar();
+                frameCount++;
+                tempoDecorrido += FRAME_TIME / 1000000.0;
 
-                    // Movimento dos inimigos
-                    if (!inimigosCongelados && frameCount % 10 == 0) {
-                        temp = inimigos;
-                        while (temp != NULL) {
-                            Inimigo *inimigo = (Inimigo *)temp->data;
-                            if (inimigo->ativo && inimigo->vida > 0) {
-                                moverInimigo(inimigo, &obj);
-                            }
-                            temp = temp->next;
-                        }
-                    }
+                if (tempoDecorrido >= nextEnemyIncreaseTime)
+                {
+                    nextEnemyIncreaseTime += 5.5;
+                    duplicarInimigos(tempoDecorrido);
+                }
 
-                    // Verificação de colisão
+                // Lógica de congelamento
+                if (inimigosCongelados && (tempoDecorrido - tempoCongelamentoInicio) >= 2.0)
+                {
+                    inimigosCongelados = 0;
+                }
+
+                // Movimento dos inimigos
+                if (!inimigosCongelados && frameCount % 10 == 0)
+                {
                     temp = inimigos;
-                    while (temp != NULL) {
+                    while (temp != NULL)
+                    {
                         Inimigo *inimigo = (Inimigo *)temp->data;
-                        if (inimigo->ativo && inimigo->x == obj.x && inimigo->y == obj.y) {
-                            obj.vidas--;
-                            if (obj.vidas <= 0) {
-                                gameOver = 1;
-                            } else {
-                                inimigosCongelados = 1;
-                                tempoCongelamentoInicio = tempoDecorrido;
-                            }
-                            break;
+                        if (inimigo->ativo && inimigo->vida > 0)
+                        {
+                            moverInimigo(inimigo, &obj);
                         }
                         temp = temp->next;
                     }
-
-                    if (gameOver) {
-                        mostrarTelaGameOver(tempoDecorrido, pontuacao);
-                        break; // Sai do loop do jogo para voltar ao menu inicial
-                    }
-
-                    atualizarTela(&obj, &machado, tempoDecorrido);
-                    usleep(FRAME_TIME);
                 }
 
-                // Limpa os recursos do jogo atual
-                liberarInimigos(&inimigos);
-                break;
-            case 1:
-                // Hall da Fama
-                mostrarHallDaFama();
-                break;
-            case 2:
-                // Sair
-                keyboardDestroy();
-                screenDestroy();
-                freeSpawnPositions();
-                exit(0);
-                break;
-            default:
-                printf("\nOpção inválida. Tente novamente.\n");
-                while (getchar() != '\n'); // Limpa o buffer de entrada
-                break;
+                // Verificação de colisão
+                temp = inimigos;
+                while (temp != NULL)
+                {
+                    Inimigo *inimigo = (Inimigo *)temp->data;
+                    if (inimigo->ativo && inimigo->x == obj.x && inimigo->y == obj.y)
+                    {
+                        aplicarDano(&obj, 1); // Aplica 10 de dano ao jogador
+                        if ((obj.vidas - obj.dano / DANO_POR_VIDA) <= 0)
+                        {
+                            gameOver = 1;
+                        }
+                        else
+                        {
+                            inimigosCongelados = 1;
+                            tempoCongelamentoInicio = tempoDecorrido;
+                        }
+                        break;
+                    }
+                    temp = temp->next;
+                }
+
+                if (gameOver)
+                {
+                    mostrarTelaGameOver(tempoDecorrido, pontuacao);
+                    break;
+                    
+                }
+
+                atualizarTela(&obj, &machado, tempoDecorrido);
+                usleep(FRAME_TIME);
+            }
+
+            // Limpa os recursos do jogo atual
+            liberarInimigos(&inimigos);
+            break;
+
+        case 1: // Hall da Fama
+            mostrarHallDaFama();
+            break;
+
+        case 2: // Sair
+            keyboardDestroy();
+            screenDestroy();
+            freeSpawnPositions();
+            exit(0);
+            break;
+
+        default:
+            printf("\nOpção inválida. Tente novamente.\n");
+            while (getchar() != '\n')
+                ;
+            break;
         }
     }
 
-    // Limpeza final
     keyboardDestroy();
     screenDestroy();
     freeSpawnPositions();
