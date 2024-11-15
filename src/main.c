@@ -916,14 +916,29 @@ int main()
             int terminalHeight = w.ws_row;
 
             const char *titulo = "Digite seu nome:";
-            const char *instrucao = "Use WASD para mover o objeto. Pressione as setas para lançar o machado.";
+            const char *instrucoes[] = {        "             [W]             [↑]         ",
+                                                "              [A][S][D]       [←][↓][→]      ",
+                                                "                                      ",
+                                                "       Movimento      Jato D'água   "
+    };
 
-            screenGotoxy((terminalWidth - strlen(instrucao)) / 2, terminalHeight / 2 - 2);
-            printf("\033[96m%s\033[0m", instrucao);
-            screenGotoxy((terminalWidth - strlen(titulo)) / 2, terminalHeight / 2);
-            printf("\033[94m%s\033[0m", titulo);
-            screenGotoxy((terminalWidth - 20) / 2, terminalHeight / 2 + 2);
-            printf("\033[92m> \033[0m");
+// Calcula a largura da janela do terminal
+int paddingVertical = terminalHeight / 2 - 6; // Ajusta a posição vertical
+
+// Exibe as instruções centralizadas
+for (int i = 0; i < 4; i++) {
+    int padding = (terminalWidth - strlen(instrucoes[i])) / 2;
+    screenGotoxy(padding, paddingVertical + i);
+    printf("\033[96m%s\033[0m", instrucoes[i]);
+}
+
+// Exibe o título centralizado
+screenGotoxy((terminalWidth - strlen(titulo)) / 2, terminalHeight / 2);
+printf("\033[94m%s\033[0m", titulo);
+
+// Exibe o prompt centralizado
+screenGotoxy((terminalWidth - 20) / 2, terminalHeight / 2 + 2);
+printf("\033[92m> \033[0m");
 
             // Captura do nome
             int index = 0;
