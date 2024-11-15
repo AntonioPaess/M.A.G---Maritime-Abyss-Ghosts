@@ -565,11 +565,7 @@ void mostrarTelaGameOver(double tempoDecorrido, int pontuacao)
     screenClear();
     y = 1; // Reset da variável global y
 
-    // Obter o tamanho do terminal
-    struct winsize w;
-    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-    int terminalWidth = w.ws_col;
-    int terminalHeight = w.ws_row;
+    // Não precisamos obter o tamanho do terminal; usaremos MAP_WIDTH e MAP_HEIGHT
 
     // Ler e exibir o conteúdo de "GameOver.txt" centralizado
     char diretorio[PATH_MAX];
@@ -583,10 +579,10 @@ void mostrarTelaGameOver(double tempoDecorrido, int pontuacao)
         char linha[256];
         int colorIndex = 0;
         const char *colors[] = {
-            "\033[34m", // Blue
-            "\033[94m", // Light Blue
-            "\033[36m", // Cyan
-            "\033[96m", // Light Cyan
+            "\033[34m", // Azul
+            "\033[94m", // Azul claro
+            "\033[36m", // Ciano
+            "\033[96m", // Ciano claro
         };
         int numColors = sizeof(colors) / sizeof(colors[0]);
 
@@ -600,8 +596,8 @@ void mostrarTelaGameOver(double tempoDecorrido, int pontuacao)
                 len--;
             }
 
-            // Calcula o padding necessário para centralizar usando a largura do terminal
-            int padding = (terminalWidth - len) / 2;
+            // Calcula o padding necessário para centralizar usando MAP_WIDTH
+            int padding = (MAP_WIDTH - len) / 2;
             if (padding < 0)
                 padding = 0;
 
@@ -613,7 +609,7 @@ void mostrarTelaGameOver(double tempoDecorrido, int pontuacao)
         }
         fclose(arquivo);
 
-        // Reset color
+        // Resetar cor
         printf("\033[0m");
     }
     else
@@ -627,22 +623,22 @@ void mostrarTelaGameOver(double tempoDecorrido, int pontuacao)
     sprintf(stats[1], "Pontuação final: %d", pontuacao);
     sprintf(stats[2], "Tempo sobrevivido: %.1f segundos", tempoDecorrido);
 
-    int startY = y; // Define startY com o valor de y
+    int startY = y; // Define startY com o valor de y atual
 
-    // Mostra estatísticas centralizadas
+    // Exibe estatísticas centralizadas
     for (int i = 0; i < 3; i++)
     {
-        screenGotoxy((MAP_WIDTH - strlen(stats[i])) / 2, startY + 7 + i);
+        screenGotoxy((MAP_WIDTH - strlen(stats[i])) / 2, startY + 2 + i);
         printf("%s", stats[i]);
     }
 
     // Linha divisória
-    screenGotoxy(0, startY + 11);
-    for (int i = 0; i < MAP_WIDTH - 4; i++)
+    screenGotoxy(0, startY + 6);
+    for (int i = 0; i < MAP_WIDTH - 3; i++)
         printf("═");
 
     // Hall da Fama
-    screenGotoxy((MAP_WIDTH - 24) / 2, startY + 13);
+    screenGotoxy((MAP_WIDTH - 24) / 2, startY + 8);
     printf("╔═══ HALL DA FAMA ═══╗");
 
     char caminhoScores[PATH_MAX];
@@ -686,24 +682,22 @@ void mostrarTelaGameOver(double tempoDecorrido, int pontuacao)
         }
 
         // Exibe os registros ordenados
-        int y = startY + 15;
+        int yPos = startY + 10;
         int rank = 1;
 
         // Cabeçalho da tabela
-        screenGotoxy((MAP_WIDTH - 50) / 2, y++);
+        screenGotoxy((MAP_WIDTH - 50) / 2, yPos++);
         printf("%-5s %-15s %-15s %-15s", "Rank", "Nome", "Tempo", "Pontuação");
-        y++;
+        yPos++;
 
-        for (int i = 0; i < count && rank <= 5; i++)
+        for (int i = 0; i < count && rank <= 2; i++)
         {
-            screenGotoxy((MAP_WIDTH - 50) / 2, y++);
+            screenGotoxy((MAP_WIDTH - 50) / 2, yPos++);
             printf("%-5d %-15s %-15.1f %-15d", rank++, registros[i].nome, registros[i].tempo, registros[i].pontuacao);
         }
     }
 
-    // Instruções
-    screenGotoxy((MAP_WIDTH - 35) / 2, MAP_HEIGHT - 3);
-    printf("Pressione Enter para selecionar uma opção...\n");
+    
 
     const char *opcoes[] = {
         "1. Salvar e voltar ao menu",
@@ -720,7 +714,7 @@ void mostrarTelaGameOver(double tempoDecorrido, int pontuacao)
             {
                 printf("\033[7m"); // Inverte as cores para destacar a opção selecionada
             }
-            screenGotoxy((MAP_WIDTH - strlen(opcoes[i])) / 2, MAP_HEIGHT - 2 + i);
+            screenGotoxy((MAP_WIDTH - strlen(opcoes[i])) / 2, MAP_HEIGHT - 4 + i);
             printf("%s", opcoes[i]);
             printf("\033[0m"); // Reseta as cores
         }
@@ -728,7 +722,7 @@ void mostrarTelaGameOver(double tempoDecorrido, int pontuacao)
         int ch = getchar();
         if (ch == '\033')
         {
-            getchar(); // Skip the [
+            getchar(); // Ignora o '['
             switch (getchar())
             {
                 case 'A':
@@ -781,7 +775,7 @@ int mostrarTelaInicial()
     char diretorio[PATH_MAX];
     obterDiretorioExecutavel(diretorio, sizeof(diretorio));
     char caminhoMenu[PATH_MAX];
-    snprintf(caminhoMenu, sizeof(caminhoMenu), "%s/assets/Menu.txt", diretorio);
+    snprintf(caminhoMenu, sizeof(caminhoMenu), "%s/assets/teste.txt", diretorio);
 
     FILE *arquivo = fopen(caminhoMenu, "r");
     if (arquivo != NULL)
@@ -936,8 +930,7 @@ int main() {
                 Inimigo *inimigoInicial = criarInimigo();
                 adicionarInimigo(&inimigos, inimigoInicial);
 
-                printf("Use WASD para mover o objeto. Pressione as setas para lançar o machado. Pressione 'q' para sair\n");
-
+                
                 // Loop principal do jogo
                 Node *temp;
                 while (1) {

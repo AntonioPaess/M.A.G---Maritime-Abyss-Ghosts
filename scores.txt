@@ -1,21 +1,6 @@
-teste,11.6,100
-sla man[D[D[D,46.0,800
-teste,3.3,0
-Antoônio,32.3,800
-AnCHovas,111.5,4500
-abacrajsmd,10.5,0
-abacrajsmd,10.5,0
-blablabla,8.8,0
-blablabla,8.8,0
-lll,8.3,0
-lallaal,9.5,0
-lallaal,9.5,0
-lallaal,4.4,0
-lallaal,11.4,0
-peixebolagato,48.3,1000
-peixebolagato,48.3,0
-peixebolagato,8.4,0
-,9.0,0
-,5.4,0
-birulirp,19.1,100
-CheiraP,24.1,400
+jkhkj,5.6,0
+nbmv,6.1,0
+huiihh,5.0,0
+teste real,5.0,0
+teste,5.3,0
+teste,17.3,600
