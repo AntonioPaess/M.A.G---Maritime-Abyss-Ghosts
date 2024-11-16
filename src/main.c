@@ -24,10 +24,10 @@
 #define TEMPO_16_INIMIGOS 22.0
 
 // Definições para o boss
-#define BOSS_SPAWN_TIME 10.0
-#define BOSS_SPAWN_SCORE 100
-#define BOSS_VIDA 500
-#define BOSS_ATTACK_INTERVAL 5.0
+#define BOSS_SPAWN_TIME 60.0
+#define BOSS_SPAWN_SCORE 1700
+#define BOSS_VIDA 1500
+#define BOSS_ATTACK_INTERVAL 2.0
 
 #define DANO_POR_VIDA 10 // Dano necessário para perder uma vida
 
@@ -37,6 +37,7 @@
 int pontuacao = 0;
 int spawnInimigosAtivo = 1;
 int gameOver = 0;
+int youWin = 0;
 int y = 1;
 double tempoDecorrido = 0.0; // Tornar global para acesso em outras funções
 
@@ -81,6 +82,8 @@ typedef struct {
     int ativo;
     const char* forma;
     double ultimoAtaque;
+    int estadoMovimento;
+    int frameCounter;
     ProjetilBoss projeteis[4];
 } Boss;
 
@@ -88,7 +91,7 @@ Objeto obj = {MAP_WIDTH / 2, MAP_HEIGHT / 2, 300, 0}; // Posição inicial do jo
 Machado machado = {0, 0, 0, ' ', 0, 0};               // Inicializa o machado como inativo
 Node *inimigos = NULL;                                // Lista de inimigos
 Node *spawnPositions = NULL;
-Boss boss = {0, 0, BOSS_VIDA, 0, "🐉", 0.0};
+Boss boss = {0, 0, BOSS_VIDA, 0, "🐉", 0.0, 0,0, {{0}}};
 char lastDir = 'd';   // Direção padrão inicial (direita)
 char nomeJogador[50]; // Armazena o nome do jogador
 
@@ -238,6 +241,44 @@ void moverInimigo(Inimigo *inimigo, Objeto *obj)
         }
     }
 }
+void moverBossQuadrado() {
+    if (!boss.ativo) return;
+
+    boss.frameCounter++;
+    if (boss.frameCounter % 8 != 0) return; // Move a cada 10 frames
+
+    int centroX = MAP_WIDTH / 2;
+    int centroY = MAP_HEIGHT / 2;
+    int larguraRetangulo = 20; // Largura do retângulo
+    int alturaRetangulo = 6;  // Altura do retângulo
+
+    switch (boss.estadoMovimento) {
+        case 0: // Movendo para a direita
+            boss.x++;
+            if (boss.x >= centroX + larguraRetangulo) {
+                boss.estadoMovimento = 1; // Muda para mover para baixo
+            }
+            break;
+        case 1: // Movendo para baixo
+            boss.y++;
+            if (boss.y >= centroY + alturaRetangulo) {
+                boss.estadoMovimento = 2; // Muda para mover para a esquerda
+            }
+            break;
+        case 2: // Movendo para a esquerda
+            boss.x--;
+            if (boss.x <= centroX - larguraRetangulo) {
+                boss.estadoMovimento = 3; // Muda para mover para cima
+            }
+            break;
+        case 3: // Movendo para cima
+            boss.y--;
+            if (boss.y <= centroY - alturaRetangulo) {
+                boss.estadoMovimento = 0; // Muda para mover para a direita
+            }
+            break;
+    }
+}
 
 
 void atualizarTela(Objeto *obj, Machado *machado, double tempoDecorrido)
@@ -290,12 +331,12 @@ void atualizarTela(Objeto *obj, Machado *machado, double tempoDecorrido)
         for (int i = 0; i < 4; i++) {
             if (boss.projeteis[i].ativo) {
                 screenGotoxy(boss.projeteis[i].x + 1, boss.projeteis[i].y + 1);
-                printf("💨");
+                printf("(🔥)");
             }
         }
         
         // Exibe vida do boss
-        screenGotoxy(MAP_WIDTH - 35, 1);
+        screenGotoxy(MAP_WIDTH - 50, 1);
         printf("Boss: %d/500", boss.vida);
     }
 
@@ -472,6 +513,7 @@ void moverMachadoEAtacar()
             {
                 boss.ativo = 0;   // Boss derrotado
                 pontuacao += 500; // Recompensa maior por derrotar o boss
+                youWin = 1;       // Define a flag de vitória
             }
             return; // Retorna após atingir o boss
         }
@@ -844,6 +886,205 @@ void mostrarTelaGameOver(double tempoDecorrido, int pontuacao)
     gameOver = 1; // Adiciona esta linha para garantir que o jogo seja reiniciado
 }
 
+void mostrarTelaYouWin(double tempoDecorrido, int pontuacao)
+{
+    screenClear();
+    y = 1; // Reset da variável global y
+
+    // Não precisamos obter o tamanho do terminal; usaremos MAP_WIDTH e MAP_HEIGHT
+
+    // Ler e exibir o conteúdo de "GameOver.txt" centralizado
+    char diretorio[PATH_MAX];
+    obterDiretorioExecutavel(diretorio, sizeof(diretorio));
+    char caminhoMenu[PATH_MAX];
+    snprintf(caminhoMenu, sizeof(caminhoMenu), "%s/assets/youwin.txt", diretorio);
+
+    FILE *arquivo = fopen(caminhoMenu, "r");
+    if (arquivo != NULL)
+    {
+        char linha[256];
+        int colorIndex = 0;
+        const char *colors[] = {
+            "\033[34m", // Azul
+            "\033[94m", // Azul claro
+            "\033[36m", // Ciano
+            "\033[96m", // Ciano claro
+        };
+        int numColors = sizeof(colors) / sizeof(colors[0]);
+
+        while (fgets(linha, sizeof(linha), arquivo))
+        {
+            // Remove o caractere de nova linha se existir
+            size_t len = strlen(linha);
+            if (len > 0 && linha[len - 1] == '\n')
+            {
+                linha[len - 1] = '\0';
+                len--;
+            }
+
+            // Calcula o padding necessário para centralizar usando MAP_WIDTH
+            int padding = (MAP_WIDTH - len) / 2;
+            if (padding < 0)
+                padding = 0;
+
+            // Alterna a cor do texto
+            printf("%s", colors[colorIndex]);
+            screenGotoxy(padding, y++);
+            printf("%s\n", linha);
+            colorIndex = (colorIndex + 1) % numColors;
+        }
+        fclose(arquivo);
+
+        // Resetar cor
+        printf("\033[0m");
+    }
+    else
+    {
+        printf("Não foi possível carregar o menu.\n");
+    }
+
+    // Estatísticas do jogador
+    char stats[3][100];
+    sprintf(stats[0], "Jogador: %s", nomeJogador);
+    sprintf(stats[1], "Pontuação final: %d", pontuacao);
+    sprintf(stats[2], "Tempo sobrevivido: %.1f segundos", tempoDecorrido);
+
+    int startY = y; // Define startY com o valor de y atual
+
+    // Exibe estatísticas centralizadas
+    for (int i = 0; i < 3; i++)
+    {
+        screenGotoxy((MAP_WIDTH - strlen(stats[i])) / 2, startY + 2 + i);
+        printf("%s", stats[i]);
+    }
+
+    // Linha divisória
+    screenGotoxy(0, startY + 6);
+    for (int i = 0; i < MAP_WIDTH - 3; i++)
+        printf("═");
+
+    // Hall da Fama
+    screenGotoxy((MAP_WIDTH - 24) / 2, startY + 8);
+    printf("╔═══ HALL DA FAMA ═══╗");
+
+    char caminhoScores[PATH_MAX];
+    snprintf(caminhoScores, sizeof(caminhoScores), "%s/scores.txt", diretorio);
+
+    FILE *arquivoScores = fopen(caminhoScores, "r");
+    if (arquivoScores != NULL)
+    {
+        typedef struct
+        {
+            char nome[50];
+            double tempo;
+            int pontuacao;
+        } Registro;
+
+        Registro registros[100];
+        int count = 0;
+
+        char linha[256];
+        while (fgets(linha, sizeof(linha), arquivoScores))
+        {
+            if (sscanf(linha, "%49[^,],%lf,%d", registros[count].nome, &registros[count].tempo, &registros[count].pontuacao) == 3)
+            {
+                count++;
+            }
+        }
+        fclose(arquivoScores);
+
+        // Ordena os registros em ordem decrescente de pontuação
+        for (int i = 0; i < count - 1; i++)
+        {
+            for (int j = i + 1; j < count; j++)
+            {
+                if (registros[j].pontuacao > registros[i].pontuacao)
+                {
+                    Registro temp = registros[i];
+                    registros[i] = registros[j];
+                    registros[j] = temp;
+                }
+            }
+        }
+
+        // Exibe os registros ordenados
+        int yPos = startY + 10;
+        int rank = 1;
+
+        // Cabeçalho da tabela
+        screenGotoxy((MAP_WIDTH - 50) / 2, yPos++);
+        printf("%-5s %-15s %-15s %-15s", "Rank", "Nome", "Tempo", "Pontuação");
+        yPos++;
+
+        for (int i = 0; i < count && rank <= 2; i++)
+        {
+            screenGotoxy((MAP_WIDTH - 50) / 2, yPos++);
+            printf("%-5d %-15s %-15.1f %-15d", rank++, registros[i].nome, registros[i].tempo, registros[i].pontuacao);
+        }
+    }
+
+    const char *opcoes[] = {
+        "1. Salvar e voltar ao menu",
+        "2. Sair"};
+    int numOpcoes = sizeof(opcoes) / sizeof(opcoes[0]);
+    int opcaoSelecionada = 0;
+
+    while (1)
+    {
+        for (int i = 0; i < numOpcoes; i++)
+        {
+            if (i == opcaoSelecionada)
+            {
+                printf("\033[7m"); // Inverte as cores para destacar a opção selecionada
+            }
+            screenGotoxy((MAP_WIDTH - strlen(opcoes[i])) / 2, MAP_HEIGHT - 4 + i);
+            printf("%s", opcoes[i]);
+            printf("\033[0m"); // Reseta as cores
+        }
+
+        int ch = getchar();
+        if (ch == '\033')
+        {
+            getchar(); // Ignora o '['
+            switch (getchar())
+            {
+            case 'A':
+                opcaoSelecionada = (opcaoSelecionada - 1 + numOpcoes) % numOpcoes;
+                break;
+            case 'B':
+                opcaoSelecionada = (opcaoSelecionada + 1) % numOpcoes;
+                break;
+            }
+        }
+        else if (ch == '\n')
+        {
+            break;
+        }
+    }
+
+    switch (opcaoSelecionada)
+    {
+    case 0: // Salvar e voltar ao menu
+        salvarPontuacao(nomeJogador, tempoDecorrido, pontuacao);
+        reiniciarJogo();
+        youWin = 0; // Usa a flag existente para sair do loop do jogo
+        break;
+    case 1:
+        liberarInimigos(&inimigos);
+        keyboardDestroy();
+        screenDestroy();
+        freeSpawnPositions();
+        exit(0);
+        break;
+    default:
+        printf("\nOpção inválida. Tente novamente.\n");
+        while (getchar() != '\n')
+            ; // Limpa o buffer de entrada
+        break;
+    }
+    gameOver = 1; // Adiciona esta linha para garantir que o jogo seja reiniciado
+}
+
 int mostrarTelaInicial()
 {
     screenClear();
@@ -859,7 +1100,7 @@ int mostrarTelaInicial()
     char diretorio[PATH_MAX];
     obterDiretorioExecutavel(diretorio, sizeof(diretorio));
     char caminhoMenu[PATH_MAX];
-    snprintf(caminhoMenu, sizeof(caminhoMenu), "%s/assets/teste.txt", diretorio);
+    snprintf(caminhoMenu, sizeof(caminhoMenu), "%s/assets/Menu.txt", diretorio);
 
     FILE *arquivo = fopen(caminhoMenu, "r");
     if (arquivo != NULL)
@@ -963,6 +1204,13 @@ void aplicarDano(Objeto *obj, int danoRecebido)
        
     }
 }
+void spawnInimigosBoss() {
+    for (int i = 0; i < 4; i++) {
+        Inimigo *novoInimigo = criarInimigo();
+        adicionarInimigo(&inimigos, novoInimigo);
+    }
+}
+
 void verificarSpawnBoss(double tempoAtual, int pontuacao) {
     if (!boss.ativo && tempoAtual >= BOSS_SPAWN_TIME && pontuacao >= BOSS_SPAWN_SCORE) {
         boss.ativo = 1;
@@ -985,6 +1233,9 @@ void verificarSpawnBoss(double tempoAtual, int pontuacao) {
             inimigo->ativo = 0;
             temp = temp->next;
         }
+
+        // Spawna 10 inimigos para atrapalhar
+        spawnInimigosBoss();
     }
 }
 
@@ -999,7 +1250,7 @@ void atacarBoss(double tempoAtual) {
             boss.projeteis[i].x = boss.x;
             boss.projeteis[i].y = boss.y;
             boss.projeteis[i].direcao = direcoes[i];
-            boss.projeteis[i].distancia = 8;
+            boss.projeteis[i].distancia = 70;
             boss.projeteis[i].moveCounter = 0;
         }
         
@@ -1011,7 +1262,7 @@ void moverProjeteisBonus() {
     for (int i = 0; i < 4; i++) {
         if (boss.projeteis[i].ativo) {
             boss.projeteis[i].moveCounter++;
-            if (boss.projeteis[i].moveCounter % 3 == 0) {
+            if (boss.projeteis[i].moveCounter % 2 == 0) {
                 switch (boss.projeteis[i].direcao) {
                     case 'w': boss.projeteis[i].y--; break;
                     case 's': boss.projeteis[i].y++; break;
@@ -1187,6 +1438,7 @@ int main()
                 if (boss.ativo) {
                     atacarBoss(tempoDecorrido);
                     moverProjeteisBonus();
+                    moverBossQuadrado();
                     
                 }
 
@@ -1220,49 +1472,58 @@ int main()
                 // Verificação de colisão
                 temp = inimigos;
                 while (temp != NULL)
-{
-    Inimigo *inimigo = (Inimigo *)temp->data;
-    
-    // Verifica colisão com inimigo
-    if (inimigo->ativo && inimigo->x == obj.x && inimigo->y == obj.y)
-    {
-        aplicarDano(&obj, 1);
-        if ((obj.vidas - obj.dano / DANO_POR_VIDA) <= 0)
-        {
-            gameOver = 1;
-        }
-        else
-        {
-            inimigosCongelados = 1;
-            tempoCongelamentoInicio = tempoDecorrido;
-        }
-        break;
-    }
-    
-    // Verifica colisão com projéteis do boss separadamente
-    if (boss.ativo) {
-    for (int i = 0; i < 4; i++) {
-        if (boss.projeteis[i].ativo && 
-            boss.projeteis[i].x == obj.x && 
-            boss.projeteis[i].y == obj.y) {
-            aplicarDano(&obj, 10);
-            boss.projeteis[i].ativo = 0; // Desativa o projétil após hit
-            
-            // Verifica se o dano causou game over
-        }
-            if ((obj.vidas - obj.dano / DANO_POR_VIDA) <= 0) {
-                gameOver = 1;
-            }
-            break;
-    }
-}
-    
-    temp = temp->next;
-}
+                {
+                    Inimigo *inimigo = (Inimigo *)temp->data;
+                    
+                    // Verifica colisão com inimigo
+                    if (inimigo->ativo && inimigo->x == obj.x && inimigo->y == obj.y)
+                    {
+                        aplicarDano(&obj, 1);
+                        if ((obj.vidas - obj.dano / DANO_POR_VIDA) <= 0)
+                        {
+                            gameOver = 1;
+                        }
+                        else
+                        {
+                            inimigosCongelados = 1;
+                            tempoCongelamentoInicio = tempoDecorrido;
+                        }
+                        break;
+                    }
+                    
+                    // Verifica colisão com projéteis do boss separadamente
+                    if (boss.ativo) {
+                        for (int i = 0; i < 4; i++) {
+                            if (boss.projeteis[i].ativo && 
+                                boss.projeteis[i].x == obj.x && 
+                                boss.projeteis[i].y == obj.y) {
+                                aplicarDano(&obj, 10);
+                                boss.projeteis[i].ativo = 0; // Desativa o projétil após hit
+                                
+                               
+                            }
+                            if (boss.vida<=0)
+                            {
+                                youWin = 1;
+                            }
+                            
+                            if ((obj.vidas - obj.dano / DANO_POR_VIDA) <= 0) {
+                                    gameOver = 1;
+                        }
+                        break;
+                    }
+                    }
+                    
+                    temp = temp->next;
+                }
 
                 if (gameOver)
                 {
                     mostrarTelaGameOver(tempoDecorrido, pontuacao);
+                    break;
+                }
+                if (youWin) {
+                    mostrarTelaYouWin(tempoDecorrido, pontuacao);
                     break;
                 }
 
