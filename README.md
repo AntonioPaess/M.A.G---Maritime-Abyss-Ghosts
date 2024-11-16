@@ -1,10 +1,10 @@
 # M.A.G---Maritime-Abyss-Ghosts
 
-Após naufragar nas profundezas do oceano, Gronkarr o Desmiolado desperta em um reino sombrio e amaldiçoado, onde criaturas monstruosas e espíritos vingativos governam. Perdido nesse pesadelo, ele descobre que o caminho de volta ao seu mundo está escondido em mistérios antigos e batalhas colossais.
+Após naufragar nas profundezas do oceano, Gronkarr o Desmiolado desperta transformado em um peixe que cospe água em seus inimigos, em um reino sombrio e amaldiçoado, onde criaturas monstruosas das profundezas e espíritos vingativos governam. Perdido nesse pesadelo aquático, ele descobre que o caminho de volta ao seu mundo está escondido em mistérios antigos e batalhas colossais.
 
-Armado apenas com sua fúria e sua idiotece, Gronkarr deve enfrentar horrores além da imaginação, desafiando abismos desconhecidos, enquanto as forças desse novo mundo tentam consumi-lo.
+Armado apenas com sua fúria e sua habilidade de cuspir água, Gronkarr deve enfrentar horrores além da imaginação, desafiando abismos desconhecidos, enquanto as forças desse novo mundo tentam consumi-lo.
 
-O tempo corre, os inimigos se acumulam e o destino de Gronkarr depende de uma única questão: ele conseguirá dominar as trevas antes que elas o destruam?
+O tempo corre, os inimigos se acumulam e o destino de Gronkarr depende de uma única questão: ele conseguirá dominar as trevas antes que elas o destruam? Seu maior desafio será enfrentar o temível dragão aquático, Leviatã, o Destruidor dos Abismos.
 
 ## Usage 
 The file `main.c` has an example of how to use the Keyboard, Screen nd Timer functions. 
