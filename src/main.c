@@ -18,10 +18,10 @@
 #define MAP_WIDTH (MAXX - MINX + 1)
 #define MAP_HEIGHT (MAXY - MINY + 1)
 #define MAX_INIMIGOS 42
-#define TEMPO_2_INIMIGOS 5.5
-#define TEMPO_4_INIMIGOS 11.0
-#define TEMPO_8_INIMIGOS 16.5
-#define TEMPO_16_INIMIGOS 22.0
+#define TEMPO_2_INIMIGOS 2.5
+#define TEMPO_4_INIMIGOS 8.0
+#define TEMPO_8_INIMIGOS 14.5
+#define TEMPO_16_INIMIGOS 20.0
 
 // Definições para o boss
 #define BOSS_SPAWN_TIME 60.0
@@ -30,8 +30,6 @@
 #define BOSS_ATTACK_INTERVAL 2.0
 
 #define DANO_POR_VIDA 10 // Dano necessário para perder uma vida
-
-
 
 // Sistema de pontuação
 int pontuacao = 0;
@@ -67,7 +65,8 @@ typedef struct
     int distancia;
     int moveCounter; // Contador para controlar a frequência de movimento
 } Machado;
-typedef struct {
+typedef struct
+{
     int x;
     int y;
     int ativo;
@@ -75,12 +74,13 @@ typedef struct {
     int distancia;
     int moveCounter;
 } ProjetilBoss;
-typedef struct {
+typedef struct
+{
     int x;
     int y;
     int vida;
     int ativo;
-    const char* forma;
+    const char *forma;
     double ultimoAtaque;
     int estadoMovimento;
     int frameCounter;
@@ -91,7 +91,7 @@ Objeto obj = {MAP_WIDTH / 2, MAP_HEIGHT / 2, 300, 0}; // Posição inicial do jo
 Machado machado = {0, 0, 0, ' ', 0, 0};               // Inicializa o machado como inativo
 Node *inimigos = NULL;                                // Lista de inimigos
 Node *spawnPositions = NULL;
-Boss boss = {0, 0, BOSS_VIDA, 0, "🐉", 0.0, 0,0, {{0}}};
+Boss boss = {0, 0, BOSS_VIDA, 0, "🐉", 0.0, 0, 0, {{0}}};
 char lastDir = 'd';   // Direção padrão inicial (direita)
 char nomeJogador[50]; // Armazena o nome do jogador
 
@@ -241,58 +241,67 @@ void moverInimigo(Inimigo *inimigo, Objeto *obj)
         }
     }
 }
-void moverBossQuadrado() {
-    if (!boss.ativo) return;
+void moverBossQuadrado()
+{
+    if (!boss.ativo)
+        return;
 
     boss.frameCounter++;
-    if (boss.frameCounter % 8 != 0) return; // Move a cada 10 frames
+    if (boss.frameCounter % 8 != 0)
+        return; // Move a cada 10 frames
 
     int centroX = MAP_WIDTH / 2;
     int centroY = MAP_HEIGHT / 2;
     int larguraRetangulo = 20; // Largura do retângulo
-    int alturaRetangulo = 6;  // Altura do retângulo
+    int alturaRetangulo = 6;   // Altura do retângulo
 
-    switch (boss.estadoMovimento) {
-        case 0: // Movendo para a direita
-            boss.x++;
-            if (boss.x >= centroX + larguraRetangulo) {
-                boss.estadoMovimento = 1; // Muda para mover para baixo
-            }
-            break;
-        case 1: // Movendo para baixo
-            boss.y++;
-            if (boss.y >= centroY + alturaRetangulo) {
-                boss.estadoMovimento = 2; // Muda para mover para a esquerda
-            }
-            break;
-        case 2: // Movendo para a esquerda
-            boss.x--;
-            if (boss.x <= centroX - larguraRetangulo) {
-                boss.estadoMovimento = 3; // Muda para mover para cima
-            }
-            break;
-        case 3: // Movendo para cima
-            boss.y--;
-            if (boss.y <= centroY - alturaRetangulo) {
-                boss.estadoMovimento = 0; // Muda para mover para a direita
-            }
-            break;
+    switch (boss.estadoMovimento)
+    {
+    case 0: // Movendo para a direita
+        boss.x++;
+        if (boss.x >= centroX + larguraRetangulo)
+        {
+            boss.estadoMovimento = 1; // Muda para mover para baixo
+        }
+        break;
+    case 1: // Movendo para baixo
+        boss.y++;
+        if (boss.y >= centroY + alturaRetangulo)
+        {
+            boss.estadoMovimento = 2; // Muda para mover para a esquerda
+        }
+        break;
+    case 2: // Movendo para a esquerda
+        boss.x--;
+        if (boss.x <= centroX - larguraRetangulo)
+        {
+            boss.estadoMovimento = 3; // Muda para mover para cima
+        }
+        break;
+    case 3: // Movendo para cima
+        boss.y--;
+        if (boss.y <= centroY - alturaRetangulo)
+        {
+            boss.estadoMovimento = 0; // Muda para mover para a direita
+        }
+        break;
     }
 }
-
 
 void atualizarTela(Objeto *obj, Machado *machado, double tempoDecorrido)
 {
     screenClear();
 
     // Desenha o contorno do mapa
-    for (int x = 0; x <= MAP_WIDTH + 1; x++) {
+    for (int x = 0; x <= MAP_WIDTH + 1; x++)
+    {
         screenGotoxy(x, 0);
         printf("═");
         screenGotoxy(x, MAP_HEIGHT + 1);
         printf("═");
     }
-    for (int y = 0; y <= MAP_HEIGHT + 1; y++) {
+    for (int y = 0; y <= MAP_HEIGHT + 1; y++)
+    {
         screenGotoxy(0, y);
         printf("║");
         screenGotoxy(MAP_WIDTH + 1, y);
@@ -313,9 +322,11 @@ void atualizarTela(Objeto *obj, Machado *machado, double tempoDecorrido)
 
     // Desenha os inimigos
     Node *temp = inimigos;
-    while (temp != NULL) {
+    while (temp != NULL)
+    {
         Inimigo *inimigo = (Inimigo *)temp->data;
-        if (inimigo->ativo && inimigo->vida > 0) {
+        if (inimigo->ativo && inimigo->vida > 0)
+        {
             screenGotoxy(inimigo->x + 1, inimigo->y + 1);
             printf("%s", inimigo->forma);
         }
@@ -323,25 +334,29 @@ void atualizarTela(Objeto *obj, Machado *machado, double tempoDecorrido)
     }
 
     // Desenha o boss e seus projéteis
-    if (boss.ativo) {
+    if (boss.ativo)
+    {
         screenGotoxy(boss.x + 1, boss.y + 1);
         printf("%s", boss.forma);
-        
+
         // Desenha os projéteis do boss
-        for (int i = 0; i < 4; i++) {
-            if (boss.projeteis[i].ativo) {
+        for (int i = 0; i < 4; i++)
+        {
+            if (boss.projeteis[i].ativo)
+            {
                 screenGotoxy(boss.projeteis[i].x + 1, boss.projeteis[i].y + 1);
                 printf("(🔥)");
             }
         }
-        
+
         // Exibe vida do boss
         screenGotoxy(MAP_WIDTH - 50, 1);
-        printf("Boss: %d/500", boss.vida);
+        printf("Leviatã: %d/500", boss.vida);
     }
 
     // Desenha o machado se estiver ativo
-    if (machado->ativo) {
+    if (machado->ativo)
+    {
         screenGotoxy(machado->x + 1, machado->y + 1);
         printf("💦");
     }
@@ -362,10 +377,14 @@ void atualizarTela(Objeto *obj, Machado *machado, double tempoDecorrido)
     int vidasPerdidas = obj->dano / DANO_POR_VIDA;
     int vidasAtuais = maxVidas - vidasPerdidas;
 
-    for (int i = 0; i < maxVidas; i++) {
-        if (i < vidasAtuais) {
+    for (int i = 0; i < maxVidas; i++)
+    {
+        if (i < vidasAtuais)
+        {
             printf("❤️ ");
-        } else {
+        }
+        else
+        {
             printf("   ");
         }
     }
@@ -454,7 +473,8 @@ int contarInimigos(Node *lista)
 void duplicarInimigos(double tempoAtual)
 {
     // Não spawna novos inimigos se o boss estiver ativo
-    if (!spawnInimigosAtivo) return;
+    if (!spawnInimigosAtivo)
+        return;
 
     int numInimigosDesejados;
 
@@ -490,8 +510,9 @@ void duplicarInimigos(double tempoAtual)
         for (int i = 0; i < inimigosParaAdicionar; i++)
         {
             // Verifica novamente se o spawn ainda está ativo
-            if (!spawnInimigosAtivo) break;
-            
+            if (!spawnInimigosAtivo)
+                break;
+
             Inimigo *novoInimigo = criarInimigo();
             adicionarInimigo(&inimigos, novoInimigo);
         }
@@ -507,8 +528,8 @@ void moverMachadoEAtacar()
         // Verifica colisão com o boss
         if (boss.ativo && machado.x == boss.x && machado.y == boss.y)
         {
-            machado.ativo = 0;    // Desativa o machado
-            boss.vida -= 100;     // Machado causa 100 de dano
+            machado.ativo = 0; // Desativa o machado
+            boss.vida -= 100;  // Machado causa 100 de dano
             if (boss.vida <= 0)
             {
                 boss.ativo = 0;   // Boss derrotado
@@ -678,7 +699,8 @@ void reiniciarJogo()
     boss.ultimoAtaque = 0.0;
 
     // Reseta projéteis do boss
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 4; i++)
+    {
         boss.projeteis[i].ativo = 0;
     }
 
@@ -1201,24 +1223,27 @@ void aplicarDano(Objeto *obj, int danoRecebido)
     {
         // O jogador perdeu todas as vidas
         gameOver = 1; // Sinaliza que o jogo acabou
-       
     }
 }
-void spawnInimigosBoss() {
-    for (int i = 0; i < 4; i++) {
+void spawnInimigosBoss()
+{
+    for (int i = 0; i < 4; i++)
+    {
         Inimigo *novoInimigo = criarInimigo();
         adicionarInimigo(&inimigos, novoInimigo);
     }
 }
 
-void verificarSpawnBoss(double tempoAtual, int pontuacao) {
-    if (!boss.ativo && tempoAtual >= BOSS_SPAWN_TIME && pontuacao >= BOSS_SPAWN_SCORE) {
+void verificarSpawnBoss(double tempoAtual, int pontuacao)
+{
+    if (!boss.ativo && tempoAtual >= BOSS_SPAWN_TIME && pontuacao >= BOSS_SPAWN_SCORE)
+    {
         boss.ativo = 1;
         boss.x = MAP_WIDTH / 2;
         boss.y = MAP_HEIGHT / 2;
         boss.vida = BOSS_VIDA;
         boss.ultimoAtaque = tempoAtual;
-        
+
         // Teleporta o jogador
         obj.x = 2;
         obj.y = 2;
@@ -1228,7 +1253,8 @@ void verificarSpawnBoss(double tempoAtual, int pontuacao) {
 
         // Destroi todos os inimigos existentes
         Node *temp = inimigos;
-        while (temp != NULL) {
+        while (temp != NULL)
+        {
             Inimigo *inimigo = (Inimigo *)temp->data;
             inimigo->ativo = 0;
             temp = temp->next;
@@ -1239,13 +1265,17 @@ void verificarSpawnBoss(double tempoAtual, int pontuacao) {
     }
 }
 
-void atacarBoss(double tempoAtual) {
-    if (!boss.ativo) return;
-    
-    if (tempoAtual - boss.ultimoAtaque >= BOSS_ATTACK_INTERVAL) {
+void atacarBoss(double tempoAtual)
+{
+    if (!boss.ativo)
+        return;
+
+    if (tempoAtual - boss.ultimoAtaque >= BOSS_ATTACK_INTERVAL)
+    {
         char direcoes[4] = {'w', 's', 'a', 'd'};
-        
-        for (int i = 0; i < 4; i++) {
+
+        for (int i = 0; i < 4; i++)
+        {
             boss.projeteis[i].ativo = 1;
             boss.projeteis[i].x = boss.x;
             boss.projeteis[i].y = boss.y;
@@ -1253,30 +1283,45 @@ void atacarBoss(double tempoAtual) {
             boss.projeteis[i].distancia = 70;
             boss.projeteis[i].moveCounter = 0;
         }
-        
+
         boss.ultimoAtaque = tempoAtual;
     }
 }
 
-void moverProjeteisBonus() {
-    for (int i = 0; i < 4; i++) {
-        if (boss.projeteis[i].ativo) {
+void moverProjeteisBonus()
+{
+    for (int i = 0; i < 4; i++)
+    {
+        if (boss.projeteis[i].ativo)
+        {
             boss.projeteis[i].moveCounter++;
-            if (boss.projeteis[i].moveCounter % 2 == 0) {
-                switch (boss.projeteis[i].direcao) {
-                    case 'w': boss.projeteis[i].y--; break;
-                    case 's': boss.projeteis[i].y++; break;
-                    case 'a': boss.projeteis[i].x--; break;
-                    case 'd': boss.projeteis[i].x++; break;
+            if (boss.projeteis[i].moveCounter % 2 == 0)
+            {
+                switch (boss.projeteis[i].direcao)
+                {
+                case 'w':
+                    boss.projeteis[i].y--;
+                    break;
+                case 's':
+                    boss.projeteis[i].y++;
+                    break;
+                case 'a':
+                    boss.projeteis[i].x--;
+                    break;
+                case 'd':
+                    boss.projeteis[i].x++;
+                    break;
                 }
                 boss.projeteis[i].distancia--;
-                
-                if (boss.projeteis[i].x == obj.x && boss.projeteis[i].y == obj.y) {
-        aplicarDano(&obj, 10);
-    boss.projeteis[i].ativo = 0;
-}
-                
-                if (boss.projeteis[i].distancia <= 0) {
+
+                if (boss.projeteis[i].x == obj.x && boss.projeteis[i].y == obj.y)
+                {
+                    aplicarDano(&obj, 10);
+                    boss.projeteis[i].ativo = 0;
+                }
+
+                if (boss.projeteis[i].distancia <= 0)
+                {
                     boss.projeteis[i].ativo = 0;
                 }
             }
@@ -1308,30 +1353,44 @@ int main()
             int terminalHeight = w.ws_row;
 
             const char *titulo = "Digite seu nome:";
-            const char *instrucoes[] = {
-                "             [W]             [↑]         ",
-                "              [A][S][D]       [←][↓][→]      ",
-                "                                      ",
-                "       Movimento      Jato D'água   "
-            };
+const char *instrucoes[] = {
+    "             [W]             [↑]         ",
+    "              [A][S][D]       [←][↓][→]      ",
+    "                                      ",
+    "       Movimento      Jato D'água   "
+};
 
-            // Calcula a largura da janela do terminal
-            int paddingVertical = terminalHeight / 2 - 6; // Ajusta a posição vertical
+const char *lore[] = {
+    "Após naufragar no oceano, Gronkarr desperta como um peixe (🐟) que cospe água.",
+    "Ele deve enfrentar criaturas das profundezas marinhas.",
+    "Seu maior desafio será derrotar Leviatã, o dragão aquático."
+};
 
-            // Exibe as instruções centralizadas
-            for (int i = 0; i < 4; i++) {
-                int padding = (terminalWidth - strlen(instrucoes[i])) / 2;
-                screenGotoxy(padding, paddingVertical + i);
-                printf("\033[96m%s\033[0m", instrucoes[i]);
-            }
+// Calcula a largura da janela do terminal
+int paddingVertical = terminalHeight / 2 - 8; // Ajusta a posição vertical
 
-            // Exibe o título centralizado
-            screenGotoxy((terminalWidth - strlen(titulo)) / 2, terminalHeight / 2);
-            printf("\033[94m%s\033[0m", titulo);
+// Exibe a lore centralizada
+for (int i = 0; i < 3; i++) {
+    int padding = (terminalWidth - strlen(lore[i])) / 2;
+    screenGotoxy(padding, paddingVertical + i);
+    printf("\033[93m%s\033[0m", lore[i]);
+}
 
-            // Exibe o prompt centralizado
-            screenGotoxy((terminalWidth - 20) / 2, terminalHeight / 2 + 2);
-            printf("\033[92m> \033[0m");
+// Exibe as instruções centralizadas
+paddingVertical += 5; // Ajusta a posição vertical para as instruções
+for (int i = 0; i < 4; i++) {
+    int padding = (terminalWidth - strlen(instrucoes[i])) / 2;
+    screenGotoxy(padding, paddingVertical + i);
+    printf("\033[96m%s\033[0m", instrucoes[i]);
+}
+
+// Exibe o título centralizado
+screenGotoxy((terminalWidth - strlen(titulo)) / 2, terminalHeight / 2 + 6);
+printf("\033[94m%s\033[0m", titulo);
+
+// Exibe o prompt centralizado
+screenGotoxy((terminalWidth - 20) / 2, terminalHeight / 2 + 8);
+printf("\033[92m> \033[0m");
 
             // Captura do nome
             int index = 0;
@@ -1433,13 +1492,13 @@ int main()
 
                 // Verifica se o boss deve aparecer
                 verificarSpawnBoss(tempoDecorrido, pontuacao);
-                
+
                 // Atualiza o boss se estiver ativo
-                if (boss.ativo) {
+                if (boss.ativo)
+                {
                     atacarBoss(tempoDecorrido);
                     moverProjeteisBonus();
                     moverBossQuadrado();
-                    
                 }
 
                 if (tempoDecorrido >= nextEnemyIncreaseTime)
@@ -1474,7 +1533,7 @@ int main()
                 while (temp != NULL)
                 {
                     Inimigo *inimigo = (Inimigo *)temp->data;
-                    
+
                     // Verifica colisão com inimigo
                     if (inimigo->ativo && inimigo->x == obj.x && inimigo->y == obj.y)
                     {
@@ -1490,30 +1549,32 @@ int main()
                         }
                         break;
                     }
-                    
+
                     // Verifica colisão com projéteis do boss separadamente
-                    if (boss.ativo) {
-                        for (int i = 0; i < 4; i++) {
-                            if (boss.projeteis[i].ativo && 
-                                boss.projeteis[i].x == obj.x && 
-                                boss.projeteis[i].y == obj.y) {
+                    if (boss.ativo)
+                    {
+                        for (int i = 0; i < 4; i++)
+                        {
+                            if (boss.projeteis[i].ativo &&
+                                boss.projeteis[i].x == obj.x &&
+                                boss.projeteis[i].y == obj.y)
+                            {
                                 aplicarDano(&obj, 10);
                                 boss.projeteis[i].ativo = 0; // Desativa o projétil após hit
-                                
-                               
                             }
-                            if (boss.vida<=0)
+                            if (boss.vida <= 0)
                             {
                                 youWin = 1;
                             }
-                            
-                            if ((obj.vidas - obj.dano / DANO_POR_VIDA) <= 0) {
-                                    gameOver = 1;
+
+                            if ((obj.vidas - obj.dano / DANO_POR_VIDA) <= 0)
+                            {
+                                gameOver = 1;
+                            }
+                            break;
                         }
-                        break;
                     }
-                    }
-                    
+
                     temp = temp->next;
                 }
 
@@ -1522,7 +1583,8 @@ int main()
                     mostrarTelaGameOver(tempoDecorrido, pontuacao);
                     break;
                 }
-                if (youWin) {
+                if (youWin)
+                {
                     mostrarTelaYouWin(tempoDecorrido, pontuacao);
                     break;
                 }

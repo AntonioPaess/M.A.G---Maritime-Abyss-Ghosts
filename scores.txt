@@ -102,3 +102,6 @@ chompin,23.0,1000
 tentativa1,28.4,1000
 tentativa2,134.2,2600
 jkhkh,1.2,0
+ww=,2.5,0
+gkj,1.1,0
+teste,67.8,2100
