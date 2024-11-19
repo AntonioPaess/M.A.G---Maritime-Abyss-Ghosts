@@ -52,6 +52,7 @@ Derrotar o Boss: Após acumular uma pontuação de 1700 e sobreviver por 60 segu
 Inimigos: Derrote inimigos para ganhar pontos.
 Boss: Derrote o boss para ganhar pontos adicionais.
 
+
 # 7.Tela de Game Over
 Salvar Pontuação: Após o game over, você pode salvar sua pontuação e voltar ao menu principal.
 Sair: Você também pode optar por sair do jogo.
