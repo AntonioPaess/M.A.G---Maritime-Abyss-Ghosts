@@ -57,3 +57,9 @@ Salvar Pontuação: Após o game over, você pode salvar sua pontuação e volta
 Sair: Você também pode optar por sair do jogo.
 Hall da Fama
 Visualizar: No menu principal, você pode visualizar o Hall da Fama com as melhores pontuações.
+Tela de Game Over
+Salvar Pontuação: Após o game over, você pode salvar sua pontuação e voltar ao menu principal.
+Sair: Você também pode optar por sair do jogo.
+Hall da Fama
+Visualizar: No menu principal, você pode visualizar o Hall da Fama com as melhores pontuações.
+Divirta-se jogando M.A.G---Maritime-Abyss-Ghosts!
