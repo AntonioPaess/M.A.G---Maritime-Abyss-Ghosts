@@ -8,13 +8,13 @@ Abra um terminal e navegue até o diretório raiz do projeto.
 
 Execute o seguinte comando para compilar todos os arquivos .c e gerar o executável:
 
-gcc ./src/*.c -I./include -o M.A.G
+    gcc ./src/*.c -I./include -o M.A.G
 
 ## 2.Execução
 
 Após a compilação, você pode executar o jogo com o seguinte comando:
 
-./M.A.G
+    ./M.A.G
 
 ## 3.Compilação no Windows
 
