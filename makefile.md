@@ -8,13 +8,13 @@ Abra um terminal e navegue até o diretório raiz do projeto.
 
 Execute o seguinte comando para compilar todos os arquivos .c e gerar o executável:
 
-gcc ./src/*.c -I./include -o M.A.G
+    gcc ./src/*.c -I./include -o M.A.G
 
 ## 2.Execução
 
 Após a compilação, você pode executar o jogo com o seguinte comando:
 
-./M.A.G
+    ./M.A.G
 
 ## 3.Compilação no Windows
 
@@ -50,12 +50,18 @@ Derrotar o Boss: Após acumular uma pontuação de 1700 e sobreviver por 60 segu
 ## 6.Pontuação
 
 Inimigos: Derrote inimigos para ganhar pontos.
-
 Boss: Derrote o boss para ganhar pontos adicionais.
 
-Tela de Game Over:
-  Salvar Pontuação: Após o game over, você pode salvar sua pontuação e voltar ao menu principal.
-  Sair: Você também pode optar por sair do jogo.
 
-Hall da Fama
-  Visualizar: No menu principal, você pode visualizar o Hall da Fama com as melhores pontuações.
+# 7.Tela de Game Over
+Salvar Pontuação: Após o game over, você pode salvar sua pontuação e voltar ao menu principal.
+Sair: Você também pode optar por sair do jogo.
+
+
+# 8.Hall da Fama
+Visualizar: No menu principal, você pode visualizar o Hall da Fama com as melhores pontuações.
+
+
+Divirta-se jogando M.A.G---Maritime-Abyss-Ghosts!
+
+
