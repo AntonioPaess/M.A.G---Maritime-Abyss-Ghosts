@@ -1,4 +1,4 @@
-# M.A.G---Maritime-Abyss-Ghosts
+# M.A.G  Maritime Abyss Ghosts
 
 Após naufragar nas profundezas do oceano, Gronkarr o Desmiolado desperta transformado em um peixe que cospe água em seus inimigos, em um reino sombrio e amaldiçoado, onde criaturas monstruosas das profundezas e espíritos vingativos governam. Perdido nesse pesadelo aquático, ele descobre que o caminho de volta ao seu mundo está escondido em mistérios antigos e batalhas colossais.
 
@@ -11,7 +11,7 @@ The file `main.c` has an example of how to use the Keyboard, Screen nd Timer fun
 
 To build this example via command line, just switch to library root directory and type the following command:
 ```
-$ gcc ./src/*.c -I./include -o cli-lib-example
+$ gcc ./src/*.c -I./include -o M.A.G
 ```
 
 To use this library to create your own apps, simply add source and header files to your project and compile it together with your own code, 
