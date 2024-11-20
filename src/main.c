@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/ioctl.h>
-#include <unistd.h> 
+#include <unistd.h>
 #include <time.h>
 #include "keyboard.h"
 #include "screen.h"
@@ -16,8 +16,6 @@
 #include "util.h"
 #include "globals.h"
 
-
-
 // Sistema de pontuação
 
 int pontuacao = 0;
@@ -26,10 +24,6 @@ int gameOver = 0;
 double tempoDecorrido = 0.0;
 char nomeJogador[50];
 int y = 1;
-
-
-
-
 
 int main()
 {
@@ -112,7 +106,7 @@ int main()
                     nomeJogador[index++] = ch;
                     nomeJogador[index] = '\0';
                 }
-                screenGotoxy((terminalWidth - 20) / 2 + 2, terminalHeight / 2 + 2);
+                screenGotoxy((terminalWidth - 20) / 2 + 2, terminalHeight / 2 + 8); // Ajuste a posição vertical aqui
                 printf("\033[92m%-20s\033[0m", nomeJogador);
                 fflush(stdout);
             }

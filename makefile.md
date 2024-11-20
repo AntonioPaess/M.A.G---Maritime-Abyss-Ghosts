@@ -53,15 +53,15 @@ Inimigos: Derrote inimigos para ganhar pontos.
 Boss: Derrote o boss para ganhar pontos adicionais.
 
 
-# 7.Tela de Game Over
+## 7.Tela de Game Over
 Salvar Pontuação: Após o game over, você pode salvar sua pontuação e voltar ao menu principal.
 Sair: Você também pode optar por sair do jogo.
 
 
-# 8.Hall da Fama
+## 8.Hall da Fama
 Visualizar: No menu principal, você pode visualizar o Hall da Fama com as melhores pontuações.
 
 
-Divirta-se jogando M.A.G---Maritime-Abyss-Ghosts!
+### Divirta-se jogando M.A.G---Maritime-Abyss-Ghosts!
 
 
