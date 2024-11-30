@@ -247,44 +247,27 @@ int main()
                     // Verifica colisão com inimigo
                     if (inimigo->ativo && inimigo->x == obj.x && inimigo->y == obj.y)
                     {
-                        aplicarDano(&obj, 1);
-                        if ((obj.vidas - obj.dano / DANO_POR_VIDA) <= 0)
-                        {
-                            gameOver = 1;
-                        }
-                        else
-                        {
+                        if (playerShield.ativo) {
+                            reduzirShield();
+                            // Ao invés de return, usamos continue para pular o dano
                             inimigosCongelados = 1;
                             tempoCongelamentoInicio = tempoDecorrido;
                         }
-                        break;
-                    }
-
-                    // Verifica colisão com projéteis do boss separadamente
-                    if (boss.ativo)
-                    {
-                        for (int i = 0; i < 4; i++)
-                        {
-                            if (boss.projeteis[i].ativo &&
-                                boss.projeteis[i].x == obj.x &&
-                                boss.projeteis[i].y == obj.y)
-                            {
-                                aplicarDano(&obj, 10);
-                                boss.projeteis[i].ativo = 0; // Desativa o projétil após hit
-                            }
-                            if (boss.vida <= 0)
-                            {
-                                youWin = 1;
-                            }
-
+                        else {
+                            // Aplica dano normal se não tiver shield
+                            aplicarDano(&obj, 1);
                             if ((obj.vidas - obj.dano / DANO_POR_VIDA) <= 0)
                             {
                                 gameOver = 1;
                             }
-                            break;
+                            else
+                            {
+                                inimigosCongelados = 1;
+                                tempoCongelamentoInicio = tempoDecorrido;
+                            }
                         }
+                        break; // Sai do loop após tratar a colisão
                     }
-
                     temp = temp->next;
                 }
 

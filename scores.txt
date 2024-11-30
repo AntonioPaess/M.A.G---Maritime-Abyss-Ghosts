@@ -7,3 +7,5 @@ teste,19.9,800
 tentativa sla,54.8,1500
 teste,58.6,2860
 sla,69.3,2160
+teste,19.9,420
+teste,70.5,3910

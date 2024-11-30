@@ -116,11 +116,32 @@ void atualizarTela(Objeto *obj, Machado *machado, double tempoDecorrido)
     screenGotoxy(obj->x + 1, obj->y + 1);
     printf("🐟");
 
+    // Desenha o shield ao redor do jogador se estiver ativo
+    if (playerShield.ativo) {
+        // Norte
+        screenGotoxy(obj->x + 1, obj->y);
+        printf("🛡️");
+        // Sul
+        screenGotoxy(obj->x + 1, obj->y + 2);
+        printf("🛡️");
+        // Leste
+        screenGotoxy(obj->x + 2, obj->y + 1);
+        printf("🛡️");
+        // Oeste
+        screenGotoxy(obj->x, obj->y + 1);
+        printf("🛡️");
+    }
+
     // Desenha os drops
     for (int i = 0; i < MAX_DROPS; i++) {
         if (drops[i].ativo) {
             screenGotoxy(drops[i].x + 1, drops[i].y + 1);
-            printf("❤️");
+            // Desenha emoji diferente baseado no tipo do drop
+            if (drops[i].tipo == DROP_SHIELD) {
+                printf("🛡️");
+            } else {
+                printf("❤️");
+            }
         }
     }
 
