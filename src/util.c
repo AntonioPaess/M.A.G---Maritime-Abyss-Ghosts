@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <mach-o/dyld.h>
 #include <libgen.h>
+#include "drops.h"
 
 void obterDiretorioExecutavel(char *diretorio, size_t tamanho)
 {
@@ -114,6 +115,14 @@ void atualizarTela(Objeto *obj, Machado *machado, double tempoDecorrido)
     // Desenha o jogador
     screenGotoxy(obj->x + 1, obj->y + 1);
     printf("🐟");
+
+    // Desenha os drops
+    for (int i = 0; i < MAX_DROPS; i++) {
+        if (drops[i].ativo) {
+            screenGotoxy(drops[i].x + 1, drops[i].y + 1);
+            printf("❤️");
+        }
+    }
 
     // Desenha os inimigos
     Node *temp = inimigos;

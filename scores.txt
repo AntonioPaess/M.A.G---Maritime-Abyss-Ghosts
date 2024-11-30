@@ -1,0 +1,9 @@
+teste,80.3,2500
+teste2,11.8,500
+teste de novo novamente,73.7,4500
+teste,60.9,5800
+teste,8.8,100
+teste,19.9,800
+tentativa sla,54.8,1500
+teste,58.6,2860
+sla,69.3,2160

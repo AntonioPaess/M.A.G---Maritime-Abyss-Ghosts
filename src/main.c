@@ -15,6 +15,7 @@
 #include "projeteis.h"
 #include "util.h"
 #include "globals.h"
+#include "drops.h"
 
 // Sistema de pontuação
 
@@ -30,6 +31,7 @@ int main()
     screenClear();
     srand(time(NULL));
     initSpawnPositions();
+    inicializarDrops();
     keyboardInit();
     screenInit(0);
 
@@ -181,6 +183,18 @@ int main()
                     }
                 }
 
+                // Calcular deltaTime (tempo entre frames)
+                static clock_t ultimoTempo = 0;
+                clock_t tempoAtual = clock();
+                float deltaTime = (float)(tempoAtual - ultimoTempo) / CLOCKS_PER_SEC;
+                ultimoTempo = tempoAtual;
+
+                // Atualizar drops
+                atualizarDrops(deltaTime);
+                verificarColetaDrops(&obj);
+                atualizarTela(&obj, &machado, tempoDecorrido);
+                desenharDrops();
+
                 // Lógica do jogo
                 moverMachadoEAtacar();
                 frameCount++;
@@ -268,6 +282,27 @@ int main()
                                 gameOver = 1;
                             }
                             break;
+                        }
+                    }
+
+                    temp = temp->next;
+                }
+
+                // Dentro do loop que verifica colisões ou ataques
+                temp = inimigos;
+                while (temp != NULL) {
+                    Inimigo *inimigo = (Inimigo *)temp->data;
+
+                    // Verificar se o inimigo foi atingido pelo machado
+                    if (inimigo->ativo && inimigo->x == machado.x && inimigo->y == machado.y) {
+                        inimigo->vida -= 100; // Substitua por quanto dano o machado causa
+
+                        if (inimigo->vida <= 0) {
+                            inimigo->ativo = 0;
+                            pontuacao += 10; // Incrementa a pontuação
+
+                            // Chama a função para tentar criar um drop
+                            tentarCriarDrop(inimigo->x, inimigo->y);
                         }
                     }
 
