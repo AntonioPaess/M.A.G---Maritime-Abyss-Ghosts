@@ -89,7 +89,7 @@ int main()
             printf("\033[92m> \033[0m");
 
             // Captura do nome
-            int index = 0;
+            size_t index = 0;
             char ch;
             while ((ch = getchar()) != '\n' && index < sizeof(nomeJogador) - 1)
             {

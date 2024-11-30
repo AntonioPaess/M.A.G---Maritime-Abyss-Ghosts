@@ -486,7 +486,7 @@ int mostrarTelaInicial()
     struct winsize w;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
     int terminalWidth = w.ws_col;
-    int terminalHeight = w.ws_row;
+    //int terminalHeight = w.ws_row;
 
     // Ler e exibir o conteúdo de "Menu.txt" centralizado
     char diretorio[PATH_MAX];
