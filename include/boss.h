@@ -7,6 +7,7 @@
 #include "globals.h"
 #include "stdbool.h"
 
+
 typedef struct
 {
     int x;

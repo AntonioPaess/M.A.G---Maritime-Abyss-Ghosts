@@ -123,7 +123,7 @@ int main()
             int frameCount = 0;
             tempoDecorrido = 0.0;
             double nextEnemyIncreaseTime = 5.5;
-            int gameOver = 0;
+            
             int inimigosCongelados = 0;
             double tempoCongelamentoInicio = 0.0;
 
@@ -210,6 +210,7 @@ int main()
                 if (boss.ativo)
                 {
                     atacarBoss(tempoDecorrido);
+                    
                     moverProjeteisBoss();
                     moverBossQuadrado();
                 }

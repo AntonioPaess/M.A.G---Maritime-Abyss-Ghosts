@@ -1,5 +1,6 @@
 #include "player.h"
 #include <stdlib.h>
+#include "globals.h" // Certifique-se de incluir globals.h se gameOver estiver declarado lá
 
 char lastDir = 'd';
 Objeto obj = {40, 12, 3, 0};
@@ -27,10 +28,8 @@ void moverObjeto(Objeto *obj, char direcao)
 void aplicarDano(Objeto *obj, int danoRecebido)
 {
     obj->dano += danoRecebido;
-
     int vidasPerdidas = obj->dano / DANO_POR_VIDA;
     int vidasRestantes = obj->vidas - vidasPerdidas;
-
     if (vidasRestantes <= 0)
     {
         // O jogador perdeu todas as vidas

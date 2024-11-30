@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "keyboard.h"
+#include "player.h"
 
 Boss boss = {0, 0, 1500, 0, "🐉", 0.0, 0, 0, {{0}}};
 int youWin = 0;
@@ -169,13 +170,11 @@ void moverProjeteisBoss()
                     break;
                 }
                 boss.projeteis[i].distancia--;
-
                 if (boss.projeteis[i].x == obj.x && boss.projeteis[i].y == obj.y)
                 {
                     aplicarDano(&obj, 10);
                     boss.projeteis[i].ativo = 0;
                 }
-
                 if (boss.projeteis[i].distancia <= 0)
                 {
                     boss.projeteis[i].ativo = 0;
