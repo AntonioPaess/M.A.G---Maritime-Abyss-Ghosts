@@ -5,6 +5,7 @@
 #include "projeteis.h"
 #include "listaEncadeada.h"
 #include "globals.h"
+#include "stdbool.h"
 
 typedef struct
 {
@@ -19,15 +20,26 @@ typedef struct
     ProjetilBoss projeteis[4];
 } Boss;
 
+typedef struct {
+    bool ativo;
+    int x;
+    int y;
+} Porta;
+
 // Variáveis globais
 extern Boss boss;
-
+extern Porta portaBoss;
+extern bool spawnInimigosPermitido;
+extern bool portaJaUsada;
 
 // Funções
+void iniciarBossFight(void);
 void verificarSpawnBoss(double tempoAtual, int pontuacao);
 void atacarBoss(double tempoAtual);
 void moverProjeteisBoss();
 void moverBossQuadrado();
 void spawnInimigosBoss();
+void verificarSpawnPorta(double tempoDecorrido, int pontuacao);
+bool mostrarDialogoBoss(void);
 
 #endif // BOSS_H

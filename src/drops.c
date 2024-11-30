@@ -9,8 +9,17 @@ Drop drops[MAX_DROPS];
 Shield playerShield = {false, 0, {false, false, false, false}};
 
 void inicializarDrops(void) {
+    // Desativa todos os drops existentes
     for (int i = 0; i < MAX_DROPS; i++) {
         drops[i].ativo = false;
+        drops[i].tempoVida = 0;
+    }
+    
+    // Reseta o shield do player
+    playerShield.ativo = false;
+    playerShield.durabilidade = 0;
+    for (int i = 0; i < 4; i++) {
+        playerShield.shields[i] = false;
     }
     srand(time(NULL)); // Inicializa a semente do rand()
 }
@@ -23,7 +32,7 @@ void tentarCriarDrop(int x, int y) {
                 drops[i].y = y;
                 drops[i].ativo = true;
                 drops[i].tempoVida = TEMPO_VIDA_DROP;
-                drops[i].tipo = (rand() % 100 < 30) ? DROP_SHIELD : DROP_VIDA;
+                drops[i].tipo = (rand() % 100 < CHANCE_DROP_TIPOS) ? DROP_SHIELD : DROP_VIDA;
                 break;
             }
         }

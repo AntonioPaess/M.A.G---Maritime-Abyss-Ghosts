@@ -48,7 +48,7 @@ void salvarPontuacao(char *nome, double tempo, int pontuacao)
     }
 }
 
-void reiniciarJogo()
+void reiniciarJogo(void)
 {
     obj.x = 40;
     obj.y = 12;
@@ -82,6 +82,9 @@ void reiniciarJogo()
 
     freeSpawnPositions();
     initSpawnPositions();
+    
+    inicializarDrops(); // Reseta todos os drops
+    screenClear();      // Limpa a tela
 }
 
 void atualizarTela(Objeto *obj, Machado *machado, double tempoDecorrido)
@@ -156,6 +159,12 @@ void atualizarTela(Objeto *obj, Machado *machado, double tempoDecorrido)
             printf("%s", inimigo->forma);
         }
         temp = temp->next;
+    }
+
+    // Após desenhar inimigos e antes do boss
+    if (portaBoss.ativo) {
+        screenGotoxy(portaBoss.x + 1, portaBoss.y + 1);
+        printf("🚪");
     }
 
     // Desenha o boss e seus projéteis

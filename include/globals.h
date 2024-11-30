@@ -4,6 +4,7 @@
 
 #include "listaEncadeada.h"
 #include "screen.h"
+#include <stdbool.h>
 
 // Definições de constantes do jogo
 #define FRAME_TIME 16667      // 16.67ms para 60 FPS
@@ -24,6 +25,7 @@ extern int y;
 extern int youWin;
 extern int spawnInimigosAtivo;
 extern char lastDir;
+extern bool spawnInimigosPermitido;
 
 // Outros externs necessários
 

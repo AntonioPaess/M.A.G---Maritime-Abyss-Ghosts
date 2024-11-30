@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <unistd.h>
 #include <string.h>
 #include <sys/ioctl.h>
@@ -17,6 +18,7 @@
 #include "globals.h"
 #include "drops.h"
 
+
 // Sistema de pontuação
 
 int pontuacao = 0;
@@ -24,6 +26,7 @@ int gameOver = 0;
 
 double tempoDecorrido = 0.0;
 char nomeJogador[50];
+bool spawnInimigosPermitido = true;
 int y = 1;
 
 int main()
@@ -211,9 +214,9 @@ int main()
                     moverBossQuadrado();
                 }
 
-                if (tempoDecorrido >= nextEnemyIncreaseTime)
+                if (tempoDecorrido >= nextEnemyIncreaseTime && spawnInimigosPermitido)
                 {
-                    nextEnemyIncreaseTime += 5.5;
+                    nextEnemyIncreaseTime += 2.5;
                     duplicarInimigos(tempoDecorrido);
                 }
 
@@ -290,6 +293,24 @@ int main()
                     }
 
                     temp = temp->next;
+                }
+
+                // Verificar spawn da porta
+                verificarSpawnPorta(tempoDecorrido, pontuacao);
+
+                // Desenhar porta se ativa
+                if (portaBoss.ativo) {
+                    screenGotoxy(portaBoss.x + 1, portaBoss.y + 1);
+                    printf("🚪");
+                }
+
+                // Verificar colisão com a porta
+                if (portaBoss.ativo && obj.x == portaBoss.x && obj.y == portaBoss.y) {
+                    if (mostrarDialogoBoss()) {
+                        // Iniciar boss fight
+                        iniciarBossFight();
+                    }
+                    // Já movemos o jogador dentro da função mostrarDialogoBoss
                 }
 
                 if (gameOver)

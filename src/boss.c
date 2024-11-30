@@ -1,9 +1,14 @@
 #include "boss.h"
 #include "inimigo.h"
+#include "screen.h"
 #include <stdlib.h>
+#include <stdio.h>
+#include "keyboard.h"
 
 Boss boss = {0, 0, 1500, 0, "🐉", 0.0, 0, 0, {{0}}};
 int youWin = 0;
+Porta portaBoss = {false, 0, 0};
+bool portaJaUsada = false;
 
 void verificarSpawnBoss(double tempoAtual, int pontuacao)
 {
@@ -34,6 +39,86 @@ void verificarSpawnBoss(double tempoAtual, int pontuacao)
         // Spawna inimigos
         spawnInimigosBoss();
     }
+}
+
+void verificarSpawnPorta(double tempoDecorrido, int pontuacao) {
+    if (!portaBoss.ativo && !portaJaUsada && tempoDecorrido >= 10.0 && pontuacao >= 100) {
+        portaBoss.ativo = true;
+        portaBoss.x = MAP_WIDTH / 2;
+        portaBoss.y = MAP_HEIGHT / 2;
+        
+        // Desativa spawn de inimigos
+        spawnInimigosPermitido = false;
+        
+        // Remove todos inimigos existentes
+        while (inimigos != NULL) {
+            Node *temp = inimigos;
+            inimigos = inimigos->next;
+            free(temp->data);
+            free(temp);
+        }
+        inimigos = NULL;
+    }
+}
+
+bool mostrarDialogoBoss(void) {
+    int escolha = 0;
+    bool dialogoAtivo = true;
+
+    while (dialogoAtivo) {
+        // Desenha caixa de diálogo
+        screenClear();
+        screenGotoxy(MAP_WIDTH / 2 - 15, MAP_HEIGHT / 2 - 2);
+        printf("╔═════════════════════════════╗");
+        screenGotoxy(MAP_WIDTH / 2 - 15, MAP_HEIGHT / 2 - 1);
+        printf("║      Portal do Leviatã      ║");
+        screenGotoxy(MAP_WIDTH / 2 - 15, MAP_HEIGHT / 2);
+        printf("║                             ║");
+        screenGotoxy(MAP_WIDTH / 2 - 15, MAP_HEIGHT / 2 + 1);
+        printf("║  %s Enfrentar Leviatã        ║", escolha == 0 ? ">" : " ");
+        screenGotoxy(MAP_WIDTH / 2 - 15, MAP_HEIGHT / 2 + 2);
+        printf("║  %s Continuar Sobrevivendo   ║", escolha == 1 ? ">" : " ");
+        screenGotoxy(MAP_WIDTH / 2 - 15, MAP_HEIGHT / 2 + 3);
+        printf("╚═════════════════════════════╝");
+        fflush(stdout); // Certifica que o diálogo é exibido
+
+        // Aguarda entrada do usuário
+        char input = getchar();
+
+        switch (input) {
+            case '\033': // Tecla especial (setas)
+                getchar(); // Ignora '['
+                switch (getchar()) {
+                    case 'A': // Seta para cima
+                        if (escolha > 0)
+                            escolha--;
+                        break;
+                    case 'B': // Seta para baixo
+                        if (escolha < 1)
+                            escolha++;
+                        break;
+                }
+                break;
+            case '\n': // Tecla Enter
+                portaBoss.ativo = false; // Porta desaparece
+                portaJaUsada = true;     // Marca que a porta já foi usada
+                dialogoAtivo = false;    // Fecha o diálogo
+
+                if (escolha == 0) {
+                    return true; // Enfrentar o Leviatã
+                } else {
+                    spawnInimigosPermitido = true; // Reativa o spawn dos inimigos
+                    // Move o jogador para fora da porta
+                    if (obj.x > 0) obj.x -= 1;
+                    return false; // Continua sobrevivendo
+                }
+                break;
+            default:
+                // Ignora outras entradas
+                break;
+        }
+    }
+    return false;
 }
 
 void atacarBoss(double tempoAtual)
@@ -154,4 +239,27 @@ void spawnInimigosBoss()
         Inimigo *novoInimigo = criarInimigo();
         adicionarInimigo(&inimigos, novoInimigo);
     }
+}
+
+void iniciarBossFight(void) {
+    boss.ativo = 1;
+    boss.x = 40;
+    boss.y = 12;
+    boss.vida = 1500;
+    boss.ultimoAtaque = 0.0;
+
+    // Teleporta o jogador
+    obj.x = 2;
+    obj.y = 2;
+    
+    // Limpa inimigos existentes
+    while (inimigos != NULL) {
+        Node *temp = inimigos;
+        inimigos = inimigos->next;
+        free(temp->data);
+        free(temp);
+    }
+
+    // Desativa a porta
+    portaBoss.ativo = false;
 }
