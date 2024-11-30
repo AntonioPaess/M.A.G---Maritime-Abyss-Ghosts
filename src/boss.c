@@ -42,7 +42,7 @@ void verificarSpawnBoss(double tempoAtual, int pontuacao)
 }
 
 void verificarSpawnPorta(double tempoDecorrido, int pontuacao) {
-    if (!portaBoss.ativo && !portaJaUsada && tempoDecorrido >= 10.0 && pontuacao >= 100) {
+    if (!portaBoss.ativo && !portaJaUsada && tempoDecorrido >= 10.0 && pontuacao >= 500) {
         portaBoss.ativo = true;
         portaBoss.x = MAP_WIDTH / 2;
         portaBoss.y = MAP_HEIGHT / 2;

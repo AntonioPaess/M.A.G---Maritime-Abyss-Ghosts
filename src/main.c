@@ -285,7 +285,7 @@ int main()
 
                         if (inimigo->vida <= 0) {
                             inimigo->ativo = 0;
-                            pontuacao += 10; // Incrementa a pontuação
+                            pontuacao += 100; // Incrementa a pontuação
 
                             // Chama a função para tentar criar um drop
                             tentarCriarDrop(inimigo->x, inimigo->y);

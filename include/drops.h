@@ -6,7 +6,7 @@
 
 // Configurações do drop
 #define MAX_DROPS 8
-#define CHANCE_DROP 80 // Chance em porcentagem de dropar um item
+#define CHANCE_DROP 110 // Chance em porcentagem de dropar um item
 #define CHANCE_DROP_TIPOS 50 // Chance em porcentagem de dropar um escudo ou vida
 #define TEMPO_VIDA_DROP 15.0f // Tempo que o drop permanece ativo
 #define DROP_VIDA 1

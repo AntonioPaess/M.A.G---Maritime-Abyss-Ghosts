@@ -50,13 +50,19 @@ void salvarPontuacao(char *nome, double tempo, int pontuacao)
 
 void reiniciarJogo(void)
 {
-    obj.x = 40;
-    obj.y = 12;
+    obj.x = 2;
+    obj.y = 2;
     obj.vidas = 3;
     obj.dano = 0;
 
     pontuacao = 0;
+    gameOver = 0;
+    youWin = 0;
     tempoDecorrido = 0.0;
+
+    spawnInimigosPermitido = true;
+    portaJaUsada = false;  // Reset da porta
+    portaBoss.ativo = false;
 
     spawnInimigosAtivo = 1;
 
