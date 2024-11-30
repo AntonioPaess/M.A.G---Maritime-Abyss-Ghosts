@@ -120,16 +120,16 @@ void atualizarTela(Objeto *obj, Machado *machado, double tempoDecorrido)
     if (playerShield.ativo) {
         // Norte
         screenGotoxy(obj->x + 1, obj->y);
-        printf("🛡️");
+        printf(" 🛡️");
         // Sul
         screenGotoxy(obj->x + 1, obj->y + 2);
-        printf("🛡️");
+        printf(" 🛡️");
         // Leste
         screenGotoxy(obj->x + 2, obj->y + 1);
         printf("🛡️");
         // Oeste
         screenGotoxy(obj->x, obj->y + 1);
-        printf("🛡️");
+        printf("🛡️ 🐟🛡️");
     }
 
     // Desenha os drops
