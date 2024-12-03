@@ -19,18 +19,23 @@ File I/O: Saves and reads the top scores, ensuring players can track their progr
 
 To compile and run the game, follow these steps:
 
-1. Build the game:
+1. Build the game:<br>
 Navigate to the library's root directory and use one of the following commands:
 ```
-make or $ gcc ./src/*.c -I./include -o M.A.G
+make
 ```
-2. Start the game:
+If this command doesn't work, try:
+```
+gcc ./src/*.c -I./include -o M.A.G
+```
+
+2. Start the game:<br>
 Execute the game binary:
 ```
 ./M.A.G
 ```
 
-3. Create your own version:
+3. Create your own version:<br>
 To customize or expand the game, simply replace the provided main.c with your own implementation, and include the library's source and header files in your project.
 
 Step into the depths and uncover the mysteries of the Maritime Abyss. Will you help Gronkarr conquer the Leviathan and escape, or will the abyss claim another soul?
