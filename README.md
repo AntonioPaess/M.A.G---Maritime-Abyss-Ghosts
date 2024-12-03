@@ -1,21 +1,41 @@
 # M.A.G  Maritime Abyss Ghosts
 
-Após naufragar nas profundezas do oceano, Gronkarr o Desmiolado desperta transformado em um peixe que cospe água em seus inimigos, em um reino sombrio e amaldiçoado, onde criaturas monstruosas das profundezas e espíritos vingativos governam. Perdido nesse pesadelo aquático, ele descobre que o caminho de volta ao seu mundo está escondido em mistérios antigos e batalhas colossais.
+After sinking to the depths of the ocean, Gronkarr the Mindless awakens transformed into a fish that spits water at his enemies, in a dark and cursed realm where monstrous deep-sea creatures and vengeful spirits rule. Lost in this aquatic nightmare, he discovers that the path back to his world is hidden in ancient mysteries and colossal battles.
 
-Armado apenas com sua fúria e sua habilidade de cuspir água, Gronkarr deve enfrentar horrores além da imaginação, desafiando abismos desconhecidos, enquanto as forças desse novo mundo tentam consumi-lo.
+Armed only with his fury and his ability to spit water, Gronkarr must face horrors beyond imagination, venturing into unknown abysses as the forces of this new world try to consume him.
 
-O tempo corre, os inimigos se acumulam e o destino de Gronkarr depende de uma única questão: ele conseguirá dominar as trevas antes que elas o destruam? Seu maior desafio será enfrentar o temível dragão aquático, Leviatã, o Destruidor dos Abismos.
+Time is running out, enemies are gathering, and Gronkarr's fate hinges on one question: Can he master the darkness before it destroys him? His greatest challenge will be to confront the fearsome aquatic dragon, Leviathan, the Destroyer of the Abyss.
 
 ## Usage 
-The file `main.c` has an example of how to use the Keyboard, Screen nd Timer functions. 
+The file `main.c` serves as a starting point for M.A.G - Maritime Abyss Ghosts, a terminal-based game developed by students of CESAR School for the Imperative and Functional Programming course. Set in a cursed underwater realm, this game combines strategy and survival as players guide Gronkarr the Mindless in his quest to overcome aquatic horrors and return to his world.
 
-To build this example via command line, just switch to library root directory and type the following command:
+This project showcases essential programming skills, meeting the following requirements:
+
+Structures (structs): To organize data for characters, enemies, and game states.
+Pointers: Used to efficiently handle dynamic game elements and interactions.
+Dynamic Memory Allocation: Allows for adaptable game resources, such as enemies appearing dynamically as the player progresses.
+Data Structures: Implements a matrix to represent the abyssal map and possibly linked lists to manage entities in the game.
+File I/O: Saves and reads the top scores, ensuring players can track their progress and compete for the highest ranks.
+
+To compile and run the game, follow these steps:
+
+1. Build the game:
+Navigate to the library's root directory and use one of the following commands:
 ```
-$ gcc ./src/*.c -I./include -o M.A.G
+make or $ gcc ./src/*.c -I./include -o M.A.G
+```
+2. Start the game:
+Execute the game binary:
+```
+./M.A.G
 ```
 
-To use this library to create your own apps, simply add source and header files to your project and compile it together with your own code, 
-replacing the main.c file to your own.
+3. Create your own version:
+To customize or expand the game, simply replace the provided main.c with your own implementation, and include the library's source and header files in your project.
+
+Step into the depths and uncover the mysteries of the Maritime Abyss. Will you help Gronkarr conquer the Leviathan and escape, or will the abyss claim another soul?
+
+
 
 
 ## Contributors
